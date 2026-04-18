@@ -1,0 +1,38 @@
+{
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "rewrites": [
+    { "source": "/planes/nebula",     "destination": "/index.html" },
+    { "source": "/planes/orbit",      "destination": "/index.html" },
+    { "source": "/planes/nova-prime", "destination": "/index.html" },
+    { "source": "/planes/supernova",  "destination": "/index.html" },
+    { "source": "/pagos",             "destination": "/index.html" },
+    { "source": "/faq",               "destination": "/index.html" },
+    { "source": "/reglas",            "destination": "/index.html" },
+    { "source": "/legal",             "destination": "/index.html" },
+    { "source": "/planes",            "destination": "/index.html" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options",    "value": "nosniff" },
+        { "key": "X-Frame-Options",           "value": "DENY" },
+        { "key": "Referrer-Policy",           "value": "strict-origin-when-cross-origin" },
+        { "key": "Permissions-Policy",        "value": "camera=(), microphone=(), geolocation=()" }
+      ]
+    },
+    {
+      "source": "/index.html",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
+      ]
+    },
+    {
+      "source": "/(.*\\.png|.*\\.ico|.*\\.jpg|.*\\.svg|.*\\.webp)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    }
+  ]
+}
