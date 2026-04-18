@@ -2,36 +2,127 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "rewrites": [
-    { "source": "/planes/nebula",     "destination": "/index.html" },
-    { "source": "/planes/orbit",      "destination": "/index.html" },
-    { "source": "/planes/nova-prime", "destination": "/index.html" },
-    { "source": "/planes/supernova",  "destination": "/index.html" },
-    { "source": "/pagos",             "destination": "/index.html" },
-    { "source": "/faq",               "destination": "/index.html" },
-    { "source": "/reglas",            "destination": "/index.html" },
-    { "source": "/legal",             "destination": "/index.html" },
-    { "source": "/planes",            "destination": "/index.html" }
+    {
+      "source": "/planes/nebula",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/planes/orbit",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/planes/nova-prime",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/planes/supernova",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/pagos",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/faq",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/reglas",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/legal",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/planes",
+      "destination": "/index.html"
+    }
   ],
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "X-Content-Type-Options",    "value": "nosniff" },
-        { "key": "X-Frame-Options",           "value": "DENY" },
-        { "key": "Referrer-Policy",           "value": "strict-origin-when-cross-origin" },
-        { "key": "Permissions-Policy",        "value": "camera=(), microphone=(), geolocation=()" }
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=(), payment=(), usb=(), bluetooth=(), magnetometer=(), gyroscope=(), accelerometer=(), ambient-light-sensor=()"
+        },
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=63072000; includeSubDomains; preload"
+        },
+        {
+          "key": "X-DNS-Prefetch-Control",
+          "value": "off"
+        },
+        {
+          "key": "Cross-Origin-Opener-Policy",
+          "value": "same-origin"
+        },
+        {
+          "key": "Cross-Origin-Resource-Policy",
+          "value": "same-origin"
+        },
+        {
+          "key": "Cross-Origin-Embedder-Policy",
+          "value": "credentialless"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.morphos.com https://novaprop.io https://dashboard.novaprop.io https://checkout.novaprop.io; frame-src 'none'; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self' https://api.morphos.com; upgrade-insecure-requests"
+        }
       ]
     },
     {
       "source": "/index.html",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
       ]
     },
     {
-      "source": "/(.*\\.png|.*\\.ico|.*\\.jpg|.*\\.svg|.*\\.webp)",
+      "source": "/novaprop_config.json",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=30, stale-while-revalidate=60"
+        },
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "https://novaprop.io"
+        }
+      ]
+    },
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=300, stale-while-revalidate=60"
+        }
+      ]
+    },
+    {
+      "source": "/(.*\\.png|.*\\.ico|.*\\.jpg|.*\\.svg|.*\\.webp|.*\\.woff2|.*\\.woff)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
       ]
     }
   ]

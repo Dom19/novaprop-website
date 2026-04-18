@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.morphos.com https://novaprop.io https://dashboard.novaprop.io https://checkout.novaprop.io; frame-src 'none'; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self' https://api.morphos.com; upgrade-insecure-requests">
   <!-- ══ Open Graph / Social Preview ══ -->
   <meta property="og:type"        content="website">
   <meta property="og:site_name"   content="NovaProp">
@@ -3452,10 +3453,18 @@ function applyConfig(cfg) {
     });
   }
 
-  // ── Registration webhook ──
+  // ── Registration ──
   if (cfg.registration) {
-    NP.regWebhook = cfg.registration.webhookUrl;
+    NP.regWebhook = cfg.registration.webhookUrl || '';
     NP.regEnabled = cfg.registration.enabled !== false;
+  }
+
+  // ── Morpho: load template UUIDs from config ──
+  if (cfg.morpho) {
+    NP.morpho = cfg.morpho;
+    loadTemplatesFromConfig(cfg);
+    // Also try to load live from API (no-op if key not configured)
+    loadMorphoTemplates();
   }
 
   // ── Checkout URL (ready but hidden) ──
@@ -3599,9 +3608,14 @@ var validators = {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? '' : (currentLang==='en'?msg_en:msg_es);
   },
   'reg-phone': function(v) {
-    var msg_es = 'Ingresa un teléfono válido.';
-    var msg_en = 'Enter a valid phone number.';
-    return v.replace(/\D/g,'').length >= 7 ? '' : (currentLang==='en'?msg_en:msg_es);
+    var raw = v.trim();
+    var msg_format_es = 'Incluye el código de país (ej: +507 6000 0000).';
+    var msg_format_en = 'Include country code (e.g., +507 6000 0000).';
+    var msg_invalid_es = 'Ingresa un teléfono válido.';
+    var msg_invalid_en = 'Enter a valid phone number.';
+    // Must have + prefix and at least 7 digits
+    if (!raw.startsWith('+')) return currentLang==='en'?msg_format_en:msg_format_es;
+    return raw.replace(/\D/g,'').length >= 7 ? '' : (currentLang==='en'?msg_invalid_en:msg_invalid_es);
   },
   'reg-birthday': function(v) {
     var msg_age_es = 'Debes tener al menos 18 años.';
@@ -3661,36 +3675,116 @@ if (termsCheck) {
   });
 }
 
-// ── Hash password (SHA-256 via SubtleCrypto) ──
-async function hashPassword(pw) {
-  var buf = new TextEncoder().encode(pw);
-  var hash = await crypto.subtle.digest('SHA-256', buf);
-  return Array.from(new Uint8Array(hash)).map(function(b){ return b.toString(16).padStart(2,'0'); }).join('');
+// ═══════════════════════════════════════════════════════════
+// MORPHO API — REGISTRATION
+// POST https://api.morphos.com/api/v1/auth/signup
+// Public endpoint — no API key required for signup
+// ═══════════════════════════════════════════════════════════
+
+var MORPHO_API_BASE = 'https://api.morphos.com/api/v1'; // POST /auth/signup = public, no API key needed
+
+// ── Validate phone has country code ──
+function normalizePhone(phone) {
+  var raw = phone.trim();
+  if (!raw.startsWith('+')) raw = '+' + raw;
+  return raw.replace(/\s/g, '');
 }
 
-// ── Form submit ──
+// ── Map API error fields to form field IDs ──
+var MORPHO_FIELD_MAP = {
+  'email':     'reg-email',
+  'password':  'reg-password',
+  'names':     'reg-firstname',
+  'surnames':  'reg-lastname',
+  'phone':     'reg-phone',
+  'country':   'reg-country',
+  'source':    null
+};
+
+function showMorphoErrors(errors, isEs) {
+  if (!Array.isArray(errors)) return;
+  errors.forEach(function(err) {
+    var fieldId = MORPHO_FIELD_MAP[err.field];
+    if (fieldId) {
+      var el = document.getElementById(fieldId);
+      var errElId = 'err-' + fieldId.replace('reg-','');
+      var errEl = document.getElementById(errElId);
+      if (el) el.classList.add('invalid');
+      if (errEl) {
+        // Translate common Morpho error messages
+        var msg = err.message || '';
+        if (msg.includes('already been taken') || msg.includes('unique')) {
+          errEl.textContent = isEs
+            ? 'Este correo ya está registrado. ¿Olvidaste tu contraseña?'
+            : 'This email is already registered. Forgot your password?';
+        } else if (msg.includes('minLength') || msg.includes('8 characters')) {
+          errEl.textContent = isEs
+            ? 'La contraseña debe tener al menos 8 caracteres.'
+            : 'Password must be at least 8 characters.';
+        } else if (msg.includes('country code') || msg.includes('format')) {
+          errEl.textContent = isEs
+            ? 'Incluye el código de país (ej: +507 6000 0000).'
+            : 'Include country code (e.g., +507 6000 0000).';
+        } else {
+          errEl.textContent = msg;
+        }
+      }
+    }
+  });
+}
+
+// ── Form submit → Morpho API ──
 var regForm = document.getElementById('reg-form');
 if (regForm) {
-  regForm.addEventListener('submit', async function(e) {
+  // ── Client-side rate limiting ──
+var _regLastSubmit = 0;
+var _regSubmitCount = 0;
+
+regForm.addEventListener('submit', async function(e) {
     e.preventDefault();
     var isEs = currentLang !== 'en';
 
-    // Validate all fields
+    // ── Rate limiting: max 3 attempts per 60 seconds ──
+    var now = Date.now();
+    if (now - _regLastSubmit < 60000) {
+      _regSubmitCount++;
+    } else {
+      _regSubmitCount = 1;
+      _regLastSubmit = now;
+    }
+    if (_regSubmitCount > 3) {
+      var statusEl = document.getElementById('reg-status');
+      if (statusEl) {
+        statusEl.className = 'reg-status error';
+        statusEl.textContent = isEs
+          ? 'Demasiados intentos. Espera 60 segundos antes de intentar de nuevo.'
+          : 'Too many attempts. Please wait 60 seconds before trying again.';
+        statusEl.style.display = 'block';
+      }
+      return;
+    }
+
+    // ── Honeypot check (anti-bot) ──
+    var honeypot = document.getElementById('reg-hp-field');
+    if (honeypot && honeypot.value) {
+      // Bot filled the hidden field — silently reject
+      console.log('[NovaProp] Bot detected via honeypot.');
+      return;
+    }
+
+    // ── Validate all fields ──
     var valid = true;
     Object.keys(validators).forEach(function(id) {
       if (!validateField(id, validators[id])) valid = false;
     });
-
-    // Validate terms
     if (!termsCheck || !termsCheck.checked) {
       var errTerms = document.getElementById('err-terms');
       if (errTerms) errTerms.textContent = isEs ? 'Debes aceptar los términos.' : 'You must accept the terms.';
       valid = false;
     }
-
     if (!valid) return;
 
-    // UI: loading state
+    // ── UI: loading state ──
     var submitBtn  = document.getElementById('reg-submit');
     var submitText = document.getElementById('reg-submit-text');
     var spinner    = document.getElementById('reg-submit-spinner');
@@ -3698,63 +3792,95 @@ if (regForm) {
     submitBtn.disabled = true;
     if (submitText) submitText.style.display = 'none';
     if (spinner) spinner.style.display = 'inline';
+    if (statusEl) { statusEl.style.display = 'none'; statusEl.textContent = ''; }
 
     try {
-      var pwHash = await hashPassword(document.getElementById('reg-password').value);
+      var phone = normalizePhone(document.getElementById('reg-phone').value);
+
+      // ── Build Morpho payload ──
       var payload = {
-        firstName:   document.getElementById('reg-firstname').value.trim(),
-        lastName:    document.getElementById('reg-lastname').value.trim(),
-        email:       document.getElementById('reg-email').value.trim().toLowerCase(),
-        phone:       document.getElementById('reg-phone').value.trim(),
-        birthday:    document.getElementById('reg-birthday').value,
-        country:     document.getElementById('reg-country').value,
-        passwordHash: pwHash,
-        acceptTerms: true,
-        source:      'website',
-        lang:        currentLang,
-        timestamp:   new Date().toISOString()
+        names:    document.getElementById('reg-firstname').value.trim(),
+        surnames: document.getElementById('reg-lastname').value.trim(),
+        email:    document.getElementById('reg-email').value.trim().toLowerCase(),
+        password: document.getElementById('reg-password').value,  // plain text — Morpho hashes server-side
+        phone:    phone,
+        country:  document.getElementById('reg-country').value,
+        source:   'novaprop'
       };
-      if (regCurrentPlan) payload.plan = regCurrentPlan;
-      if (regCurrentSize) payload.size = regCurrentSize;
 
-      var webhookUrl = (NP.config && NP.config.registration && NP.config.registration.webhookUrl)
-        || 'https://PLACEHOLDER.novaprop.io/webhooks/register';
-
-      // POST to CRM webhook
-      var response = await fetch(webhookUrl, {
-        method: 'POST',
+      // ── POST to Morpho API ──
+      var response = await fetch(MORPHO_API_BASE + '/auth/signup', {
+        method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body:    JSON.stringify(payload)
       });
 
-      if (response.ok) {
+      var data;
+      try { data = await response.json(); } catch(e) { data = {}; }
+
+      // ── Success: 201 Created ──
+      if (response.status === 201 || response.ok) {
         statusEl.className = 'reg-status success';
-        statusEl.textContent = isEs
-          ? '¡Cuenta creada! Revisa tu correo para continuar.'
-          : 'Account created! Check your email to continue.';
+        statusEl.innerHTML = isEs
+          ? '<strong>¡Cuenta creada exitosamente!</strong><br>Revisa tu correo para verificar tu cuenta y acceder al dashboard.'
+          : '<strong>Account created successfully!</strong><br>Check your email to verify your account and access the dashboard.';
         statusEl.style.display = 'block';
         regForm.style.display = 'none';
-      } else {
-        throw new Error('Server error: ' + response.status);
+
+        // Optional: redirect to dashboard after 3s if URL configured
+        if (NP.config && NP.config.site && NP.config.site.dashboardUrl) {
+          setTimeout(function() {
+            window.open(NP.config.site.dashboardUrl, '_blank');
+          }, 3000);
+        }
+        return;
       }
-    } catch (err) {
-      // Webhook placeholder — show success anyway in dev mode
-      var isPlaceholder = err.message && (err.message.includes('fetch') || err.message.includes('Failed'));
-      if (isPlaceholder) {
-        // Dev mode: simulate success
-        statusEl.className = 'reg-status success';
-        statusEl.textContent = isEs
-          ? '¡Datos recibidos! (Webhook pendiente de configuración)'
-          : 'Data received! (Webhook pending configuration)';
-        statusEl.style.display = 'block';
-        console.log('[NovaProp Dev] Registration payload:', JSON.parse(JSON.stringify(payload||{})));
-      } else {
+
+      // ── Validation errors: 422 ──
+      if (response.status === 422 && data.errors) {
+        showMorphoErrors(data.errors, isEs);
         statusEl.className = 'reg-status error';
         statusEl.textContent = isEs
-          ? 'Error al procesar. Intenta de nuevo o contacta soporte.'
-          : 'Processing error. Try again or contact support.';
+          ? 'Revisa los campos marcados en rojo.'
+          : 'Please review the fields marked in red.';
         statusEl.style.display = 'block';
+        return;
       }
+
+      // ── Email duplicate — sometimes comes as 409 ──
+      if (response.status === 409) {
+        var errEl = document.getElementById('err-email');
+        var emailEl = document.getElementById('reg-email');
+        if (errEl) errEl.textContent = isEs
+          ? 'Este correo ya está registrado.'
+          : 'This email is already registered.';
+        if (emailEl) emailEl.classList.add('invalid');
+        statusEl.className = 'reg-status error';
+        statusEl.textContent = isEs
+          ? 'Este correo ya tiene una cuenta. Inicia sesión en el dashboard.'
+          : 'This email already has an account. Sign in to the dashboard.';
+        statusEl.style.display = 'block';
+        return;
+      }
+
+      // ── Other server errors ──
+      var serverMsg = (data.error && data.error.message) || (data.errors && data.errors[0] && data.errors[0].message) || '';
+      throw new Error('API error ' + response.status + (serverMsg ? ': ' + serverMsg : ''));
+
+    } catch (err) {
+      statusEl.className = 'reg-status error';
+      // Network failure (CORS in dev, offline, etc.)
+      if (err.message && (err.message.includes('fetch') || err.message.includes('Failed') || err.message.includes('NetworkError'))) {
+        statusEl.innerHTML = isEs
+          ? 'Error de conexión. Verifica tu internet e intenta de nuevo.'
+          : 'Connection error. Check your internet and try again.';
+      } else {
+        statusEl.innerHTML = isEs
+          ? 'Ocurrió un error. Intenta de nuevo o contacta soporte.'
+          : 'An error occurred. Try again or contact support.';
+      }
+      statusEl.style.display = 'block';
+      console.error('[NovaProp] Registration error:', err);
     } finally {
       submitBtn.disabled = false;
       if (submitText) submitText.style.display = 'inline';
@@ -3763,13 +3889,137 @@ if (regForm) {
   });
 }
 
+// ═══════════════════════════════════════════════════════════
+// MORPHO CHALLENGES — CHECKOUT FLOW
+// ═══════════════════════════════════════════════════════════
+
+// Template UUID cache — populated from config.json morpho.templates
+// or from loadMorphoTemplates() once API key is available
+var MORPHO_TEMPLATES = {};
+
+// ── Load templates from config.json into MORPHO_TEMPLATES ──
+function loadTemplatesFromConfig(cfg) {
+  if (!cfg || !cfg.morpho || !cfg.morpho.templates) return;
+  var templates = cfg.morpho.templates;
+  Object.keys(templates).forEach(function(planKey) {
+    var planTemplates = templates[planKey];
+    if (!planTemplates || planTemplates._comment) {
+      // Remove _comment, keep only size keys
+    }
+    MORPHO_TEMPLATES[planKey] = {};
+    Object.keys(planTemplates).forEach(function(sizeKey) {
+      if (sizeKey === '_comment') return;
+      var t = planTemplates[sizeKey];
+      if (t && t.templateUuid) {
+        MORPHO_TEMPLATES[planKey][parseInt(sizeKey)] = t.templateUuid;
+      }
+    });
+  });
+  
+}
+
+// ── (Future) Load templates live from Morpho API ──
+// Call this once you have the API key configured.
+// It fetches GET /challenges/templates and maps them to the
+// MORPHO_TEMPLATES object so getCheckoutUrl() works automatically.
+async function loadMorphoTemplates() {
+  var cfg = NP.config;
+  if (!cfg || !cfg.morpho || !cfg.morpho.apiKey || cfg.morpho.apiKey.includes('REPLACE')) {
+    // no-op: proxy handles template loading
+    return;
+  }
+  // NOTE: Direct API calls from the browser would expose the API key.
+  // Template loading from the Morpho API is handled by the Vercel
+  // serverless proxy at /api/templates — to be implemented when
+  // the API key is available. See README.md for instructions.
+  try {
+    var proxyRes = await fetch('/api/templates');
+    if (!proxyRes.ok) return;
+    var templates = await proxyRes.json();
+    if (!Array.isArray(templates)) return;
+    var PLAN_NAME_MAP = {
+      'nebula':    ['nebula','3-step','3 step','tres','three'],
+      'orbit':     ['orbit','2-step','2 step','dos','two'],
+      'novaprime': ['nova prime','novaprime','prime','1-step','1 step','one'],
+      'supernova': ['supernova','instant','instantáneo','instante']
+    };
+    templates.forEach(function(tpl) {
+      if (!tpl.uuid || !tpl.equity || !tpl.plan) return;
+      var equitySize = Math.round(parseFloat(tpl.equity.price));
+      var planNameRaw = ((tpl.plan.name && (tpl.plan.name.es || tpl.plan.name.en)) || '').toLowerCase();
+      var matchedPlan = null;
+      Object.keys(PLAN_NAME_MAP).forEach(function(key) {
+        PLAN_NAME_MAP[key].forEach(function(keyword) {
+          if (planNameRaw.includes(keyword)) matchedPlan = key;
+        });
+      });
+      if (matchedPlan && equitySize) {
+        if (!MORPHO_TEMPLATES[matchedPlan]) MORPHO_TEMPLATES[matchedPlan] = {};
+        MORPHO_TEMPLATES[matchedPlan][equitySize] = tpl.uuid;
+      }
+    });
+  } catch(e) {
+    // Proxy not yet deployed — templates from config.json only
+  }
+}
+
+// ── Get checkout URL for a plan+size combination ──
+function getCheckoutUrl(planKey, size) {
+  var cfg = NP.config;
+  var baseUrl = (cfg && cfg.site && cfg.site.checkoutUrl) || (cfg && cfg.site && cfg.site.dashboardUrl) || '';
+  if (!baseUrl || baseUrl.includes('PLACEHOLDER')) return null;
+
+  // Try to get specific templateUuid from MORPHO_TEMPLATES
+  var templateUuid = MORPHO_TEMPLATES[planKey] && MORPHO_TEMPLATES[planKey][size];
+
+  if (templateUuid) {
+    // We have the specific template — use the pattern from config
+    var pattern = (cfg && cfg.morpho && cfg.morpho.checkoutUrlPattern) || '{checkoutUrl}?template={templateUuid}';
+    return pattern
+      .replace('{checkoutUrl}', baseUrl)
+      .replace('{templateUuid}', templateUuid)
+      .replace('{planKey}', planKey)
+      .replace('{size}', size);
+  }
+
+  // No template UUID yet — fallback: go to checkout/dashboard with plan params
+  // Morpho may accept ?plan=planKey&equity=size as query params
+  return baseUrl + '?plan=' + encodeURIComponent(planKey) + '&equity=' + encodeURIComponent(size);
+}
+
 // ── Wire up "Iniciar Este Desafío →" buttons ──
+// Logic:
+//   1. If checkoutUrl is configured → redirect to Morpho checkout
+//   2. If not configured yet → open registration modal (dev mode fallback)
 function wireInitButtons() {
   document.querySelectorAll('.btn-start-challenge').forEach(function(btn) {
     btn.addEventListener('click', function() {
       var planKey = btn.dataset.plan || currentPlan;
       var size    = parseInt(btn.dataset.size) || null;
-      openRegModal(planKey, size);
+
+      var checkoutUrl = size ? getCheckoutUrl(planKey, size) : null;
+
+      if (checkoutUrl) {
+        // ── PRODUCTION: validate URL before redirect ──
+        try {
+          var parsed = new URL(checkoutUrl);
+          var allowed = ['dashboard.novaprop.io', 'checkout.novaprop.io', 'api.morphos.com', 'novaprop.io'];
+          var hostname = parsed.hostname.toLowerCase();
+          var isAllowed = allowed.some(function(d) { return hostname === d || hostname.endsWith('.' + d); });
+          if (isAllowed) {
+            window.location.href = checkoutUrl;
+          } else {
+            console.warn('[NovaProp] Blocked redirect to unallowed domain:', hostname);
+            openRegModal(planKey, size);
+          }
+        } catch(e) {
+          openRegModal(planKey, size);
+        }
+      } else {
+        // ── FALLBACK: open registration modal ──
+        // (used during dev, or when user hasn't selected a size yet)
+        openRegModal(planKey, size);
+      }
     });
   });
 }
@@ -3867,23 +4117,24 @@ document.addEventListener('DOMContentLoaded', function() {
       try {
         var pwHash = await hashPassword(document.getElementById('reg-password').value);
         var payload = {
-          firstName:    document.getElementById('reg-firstname').value.trim(),
-          lastName:     document.getElementById('reg-lastname').value.trim(),
+          names:        document.getElementById('reg-firstname').value.trim(),
+          surnames:     document.getElementById('reg-lastname').value.trim(),
           email:        document.getElementById('reg-email').value.trim().toLowerCase(),
-          phone:        document.getElementById('reg-phone').value.trim(),
+          phone:        normalizePhone(document.getElementById('reg-phone').value),
           birthday:     document.getElementById('reg-birthday').value,
           country:      document.getElementById('reg-country').value,
-          passwordHash: pwHash,
-          acceptTerms:  true,
-          source:       'website',
+          source:       'novaprop',
           lang:         currentLang,
           timestamp:    new Date().toISOString()
         };
         if (regCurrentPlan) payload.plan = regCurrentPlan;
         if (regCurrentSize) payload.size = regCurrentSize;
 
-        var webhookUrl = (NP.config && NP.config.registration && NP.config.registration.webhookUrl)
-          || 'https://PLACEHOLDER.novaprop.io/webhooks/register';
+        var webhookUrl = (NP.config && NP.config.registration && NP.config.registration.webhookUrl) || '';
+        if (!webhookUrl || webhookUrl.includes('PLACEHOLDER') || webhookUrl === '') {
+          // Webhook not yet configured — skip
+          throw new Error('WEBHOOK_NOT_CONFIGURED');
+        }
 
         var response = await fetch(webhookUrl, {
           method: 'POST',
@@ -3909,7 +4160,7 @@ document.addEventListener('DOMContentLoaded', function() {
             ? '¡Datos recibidos! (Webhook pendiente de configuración)'
             : 'Data received! (Webhook pending configuration)';
           statusEl.style.display = 'block';
-          console.log('[NovaProp Dev] Registration payload ready to send to CRM:', JSON.stringify(payload||{}));
+          // Dev log removed for security
         } else {
           statusEl.className = 'reg-status error';
           statusEl.textContent = isEs
@@ -4809,7 +5060,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
       <div class="reg-field">
         <label class="reg-label" data-en="Phone Number" data-es="Teléfono">Teléfono</label>
-        <input type="tel" id="reg-phone" name="phone" class="reg-input" placeholder="+507 6000 0000" required autocomplete="tel">
+        <input type="tel" id="reg-phone" name="phone" class="reg-input" placeholder="+507 6000 0000 (incluye +código)" required autocomplete="tel">
         <span class="reg-err" id="err-phone"></span>
       </div>
 
@@ -5047,6 +5298,11 @@ document.addEventListener('DOMContentLoaded', function() {
         <span class="reg-err" id="err-confirm"></span>
       </div>
 
+      <!-- Honeypot anti-bot — hidden from real users -->
+      <div style="position:absolute;left:-9999px;top:-9999px;opacity:0;height:0;overflow:hidden" aria-hidden="true" tabindex="-1">
+        <label>Leave this empty</label>
+        <input type="text" id="reg-hp-field" name="website" tabindex="-1" autocomplete="new-password" value="">
+      </div>
       <div class="reg-field reg-terms-field">
         <label class="reg-checkbox-label">
           <input type="checkbox" id="reg-terms" name="acceptTerms" required>
