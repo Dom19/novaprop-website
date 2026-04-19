@@ -1,0 +1,1946 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>NovaProp — Modelo Financiero Interno</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=DM+Sans:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<style>
+/* ─── Reset & Base ─── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  /* NovaProp Brand */
+  --nova-black:     #090909;
+  --nova-dark:      #0d0d0d;
+  --nova-surface:   #111111;
+  --nova-surface2:  #181818;
+  --nova-surface3:  #1e1e1e;
+
+  --nova-lava:      #e8541a;
+  --nova-ember:     #f28c38;
+  --nova-gold:      #c9933a;
+  --nova-gold-soft: #d4a855;
+  --nova-ash:       #8a7a6e;
+
+  --nova-border:    rgba(255,255,255,0.09);
+  --nova-border2:   rgba(255,255,255,0.16);
+  --nova-glow:      rgba(232,84,26,0.15);
+
+  --text-primary:   rgba(255,255,255,0.95);
+  --text-secondary: rgba(255,255,255,0.78);
+  --text-dim:       rgba(255,255,255,0.50);
+
+  --green:          #3ecf72;
+  --green-bg:       rgba(62,207,114,0.08);
+  --green-border:   rgba(62,207,114,0.25);
+  --red:            #f05c5c;
+  --red-bg:         rgba(240,92,92,0.08);
+  --red-border:     rgba(240,92,92,0.25);
+  --orange:         #f28c38;
+  --blue:           #6aadff;
+  --yellow:         #d4a855;
+
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body:    'DM Sans', sans-serif;
+  --font-mono:    'Space Mono', monospace;
+
+  --radius-sm:  6px;
+  --radius-md:  10px;
+  --radius-lg:  14px;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--nova-black);
+  color: var(--text-primary);
+  min-height: 100vh;
+  padding: 2.5rem 2rem 5rem;
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+/* Ambient background glow */
+body::before {
+  content: '';
+  position: fixed;
+  top: -200px;
+  left: -200px;
+  width: 700px;
+  height: 700px;
+  background: radial-gradient(circle, rgba(232,84,26,0.07) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+body::after {
+  content: '';
+  position: fixed;
+  bottom: -150px;
+  right: -150px;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(201,147,58,0.06) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── Layout wrapper ─── */
+.wrapper { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; }
+
+/* ─── Header ─── */
+.header {
+  position: relative;
+  margin-bottom: 3rem;
+  padding-bottom: 2rem;
+}
+.header-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+.header-left {}
+.header-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--nova-lava);
+  margin-bottom: 0.9rem;
+}
+.header-eyebrow::before {
+  content: '';
+  display: inline-block;
+  width: 24px;
+  height: 1px;
+  background: var(--nova-lava);
+}
+.header h1 {
+  font-family: var(--font-display);
+  font-size: 2.8rem;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: #fff;
+  margin-bottom: 0.6rem;
+}
+.header h1 .brand {
+  background: linear-gradient(100deg, var(--nova-lava) 0%, var(--nova-ember) 40%, var(--nova-gold-soft) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.header h1 .plain { color: rgba(255,255,255,0.90); }
+.header-sub {
+  font-size: 16px;
+  color: rgba(255,255,255,0.60);
+  font-weight: 300;
+  max-width: 560px;
+  line-height: 1.6;
+}
+.header-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.header-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 7px 14px;
+  border-radius: var(--radius-sm);
+  background: rgba(232,84,26,0.08);
+  border: 1px solid rgba(232,84,26,0.25);
+  color: rgba(255,255,255,0.65);
+  white-space: nowrap;
+}
+.header-badge::before {
+  content: '';
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--nova-lava);
+  flex-shrink: 0;
+  animation: pulse 2s infinite;
+}
+.header-version {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: rgba(255,255,255,0.25);
+  letter-spacing: 0.08em;
+}
+/* Bottom divider with glow */
+.header-divider {
+  height: 1px;
+  background: linear-gradient(90deg, var(--nova-lava) 0%, var(--nova-gold-soft) 30%, rgba(255,255,255,0.06) 100%);
+  position: relative;
+}
+.header-divider::after {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: 0;
+  width: 180px;
+  height: 9px;
+  background: linear-gradient(90deg, rgba(232,84,26,0.35), transparent);
+  filter: blur(4px);
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.25; }
+}
+
+/* ─── Section label ─── */
+.section-label {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.55);
+  margin-bottom: 0.75rem;
+}
+
+/* ─── Plan Tabs ─── */
+.plan-bar {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+.ptab {
+  padding: 10px 22px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--nova-border);
+  font-size: 15px;
+  font-family: var(--font-body);
+  font-weight: 500;
+  cursor: pointer;
+  background: transparent;
+  color: var(--text-secondary);
+  transition: all 0.18s ease;
+  letter-spacing: 0.01em;
+}
+.ptab:hover {
+  border-color: rgba(232,84,26,0.3);
+  background-image: linear-gradient(90deg, var(--nova-lava), var(--nova-gold-soft));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  background-color: var(--nova-surface);
+}
+.ptab.active {
+  background: var(--nova-surface2);
+  background-image: linear-gradient(90deg, var(--nova-lava), var(--nova-gold-soft));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  border-color: rgba(232,84,26,0.45);
+  box-shadow: 0 0 0 1px rgba(232,84,26,0.1) inset;
+}
+
+/* ─── Size Tabs ─── */
+.size-bar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+  align-items: flex-start;
+}
+.sztab-wrap {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.best-badge {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: linear-gradient(90deg, var(--nova-lava), var(--nova-gold-soft));
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 20px;
+  white-space: nowrap;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+/* ─── Lang toggle ─── */
+.lang-toggle {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+.lang-btn {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 4px 10px;
+  border-radius: 4px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: transparent;
+  color: rgba(255,255,255,0.40);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.lang-btn.active {
+  background: var(--nova-lava);
+  border-color: var(--nova-lava);
+  color: #fff;
+}
+[data-en], [data-es] { display: none; }
+.lang-es [data-es]   { display: inline; }
+.lang-es [data-es-block] { display: block; }
+.lang-en [data-en]   { display: inline; }
+.lang-en [data-en-block] { display: block; }
+
+/* ─── Price input per size tab (same as cap) ─── */
+.price-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  width: 100%;
+}
+.price-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: rgba(255,255,255,0.40);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.price-input-row {
+  display: flex;
+  align-items: center;
+  background: var(--nova-surface2);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 5px;
+  overflow: hidden;
+  transition: border-color 0.15s;
+  width: 100%;
+  max-width: 130px;
+}
+.price-input-row:focus-within { border-color: var(--nova-gold-soft); }
+.price-prefix {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: rgba(255,255,255,0.35);
+  padding: 5px 5px 5px 8px;
+  user-select: none;
+  flex-shrink: 0;
+}
+.price-input {
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.85);
+  padding: 5px 8px 5px 2px;
+  width: 100%;
+  min-width: 0;
+  -moz-appearance: textfield;
+}
+.price-input::-webkit-inner-spin-button,
+.price-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+.price-modified { color: var(--nova-gold-soft) !important; }
+.price-reset {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: rgba(255,255,255,0.25);
+  padding: 0;
+  margin-top: 1px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: color 0.15s;
+  display: none;
+}
+.price-reset.visible { display: inline; }
+.price-reset:hover { color: var(--nova-gold-soft); }
+
+/* ─── Save defaults button ─── */
+.save-defaults-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-bottom: 1.5rem;
+}
+.save-defaults-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 8px 18px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(232,84,26,0.4);
+  background: rgba(232,84,26,0.08);
+  color: rgba(255,255,255,0.70);
+  cursor: pointer;
+  transition: all 0.18s;
+}
+.save-defaults-btn:hover {
+  background: rgba(232,84,26,0.18);
+  border-color: var(--nova-lava);
+  color: #fff;
+}
+.save-defaults-btn svg {
+  flex-shrink: 0;
+}
+.save-confirm {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--green);
+  margin-right: 10px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.save-confirm.show { opacity: 1; }
+
+/* ─── Breakdown scenario selector ─── */
+.breakdown-scen-bar {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 1rem;
+}
+.bstab {
+  flex: 1;
+  padding: 6px 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-radius: 5px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: transparent;
+  color: rgba(255,255,255,0.35);
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+}
+.bstab.bs-peor.active  { background: rgba(240,92,92,0.15); border-color: var(--red); color: var(--red); }
+.bstab.bs-prom.active  { background: rgba(242,140,56,0.15); border-color: var(--orange); color: var(--orange); }
+.bstab.bs-mejor.active { background: rgba(62,207,114,0.15); border-color: var(--green); color: var(--green); }
+.bstab:hover { color: rgba(255,255,255,0.70); border-color: rgba(255,255,255,0.25); }
+/* ─── Max cap input per size ─── */
+.cap-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  margin-top: 2px;
+  width: 100%;
+}
+.cap-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: rgba(255,255,255,0.40);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.cap-input-row {
+  display: flex;
+  align-items: center;
+  background: var(--nova-surface2);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 5px;
+  overflow: hidden;
+  transition: border-color 0.15s;
+  width: 100%;
+  max-width: 130px;
+}
+.cap-input-row:focus-within {
+  border-color: var(--nova-lava);
+}
+.cap-prefix {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: rgba(255,255,255,0.35);
+  padding: 5px 5px 5px 8px;
+  user-select: none;
+  flex-shrink: 0;
+}
+.cap-input {
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.85);
+  padding: 5px 8px 5px 2px;
+  width: 100%;
+  min-width: 0;
+  -moz-appearance: textfield;
+}
+.cap-input::-webkit-inner-spin-button,
+.cap-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+.cap-modified {
+  color: var(--nova-ember) !important;
+}
+.cap-reset {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: rgba(255,255,255,0.25);
+  padding: 0;
+  margin-top: 1px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: color 0.15s;
+  display: none;
+}
+.cap-reset.visible { display: inline; }
+.cap-reset:hover { color: var(--nova-lava); }
+.sztab {
+  padding: 8px 18px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--nova-border);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  cursor: pointer;
+  background: transparent;
+  color: var(--text-secondary);
+  transition: all 0.18s ease;
+}
+.sztab:hover {
+  border-color: rgba(232,84,26,0.3);
+  background-image: linear-gradient(90deg, var(--nova-lava), var(--nova-gold-soft));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.sztab.active {
+  background: var(--nova-surface2);
+  background-image: linear-gradient(90deg, var(--nova-lava), var(--nova-gold-soft));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  border-color: rgba(232,84,26,0.4);
+}
+.sztab.best {
+  border-color: rgba(232,84,26,0.3);
+}
+
+/* ─── Card base ─── */
+.card {
+  background: var(--nova-surface);
+  border: 1px solid var(--nova-border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  margin-bottom: 1.25rem;
+}
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+.card-title {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.55);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+/* ─── Variables Panel ─── */
+.variables-panel {
+  background: var(--nova-surface);
+  border: 1px solid var(--nova-border2);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  margin-bottom: 1.25rem;
+}
+.variables-panel .card-title {
+  margin-bottom: 1.25rem;
+  display: block;
+}
+.vars-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+.var-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.var-label {
+  font-size: 15px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+.var-sublabel {
+  font-size: 13px;
+  color: rgba(255,255,255,0.55);
+  margin-top: -2px;
+  line-height: 1.4;
+}
+.var-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: var(--nova-surface2);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  transition: border-color 0.15s;
+}
+.var-input-wrap:focus-within {
+  border-color: var(--nova-lava);
+}
+.var-input-wrap input[type="number"] {
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--nova-gold-soft);
+  padding: 10px 10px 10px 12px;
+  width: 100%;
+  min-width: 0;
+  -moz-appearance: textfield;
+}
+.var-input-wrap input[type="number"]::-webkit-inner-spin-button,
+.var-input-wrap input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+}
+.var-unit {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  color: var(--text-dim);
+  padding: 10px 12px 10px 4px;
+  white-space: nowrap;
+  user-select: none;
+}
+.var-result {
+  font-size: 13px;
+  color: var(--text-dim);
+  margin-top: 2px;
+  font-family: var(--font-mono);
+  min-height: 16px;
+}
+.var-result.active { color: var(--nova-ember); }
+.var-result.warn { color: var(--red); }
+
+/* Commission total badge */
+.comm-total-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  background: rgba(232,84,26,0.08);
+  border: 1px solid rgba(232,84,26,0.25);
+  color: #fff;
+  margin-top: 1rem;
+}
+.comm-total-badge .ct-label { color: var(--text-dim); }
+
+/* ─── 3-Scenario Grid ─── */
+.scen-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 1.25rem;
+}
+.scen-card {
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  border: 1px solid var(--nova-border);
+  background: var(--nova-surface);
+  transition: border-color 0.2s;
+}
+.scen-card:hover { border-color: var(--nova-border2); }
+.scen-card.s-peor  { border-top: 3px solid var(--red); }
+.scen-card.s-prom  { border-top: 3px solid var(--orange); }
+.scen-card.s-mejor { border-top: 3px solid var(--green); }
+
+.sc-head {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin-bottom: 0.9rem;
+}
+.s-peor  .sc-head { color: var(--red); }
+.s-prom  .sc-head { color: var(--orange); }
+.s-mejor .sc-head { color: var(--green); }
+
+.sc-margen {
+  font-family: var(--font-mono);
+  font-size: 1.9rem;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.sc-margen.positive { color: var(--green); }
+.sc-margen.negative { color: var(--red); }
+
+.sc-pct {
+  font-size: 14px;
+  color: rgba(255,255,255,0.70);
+  margin-bottom: 1rem;
+}
+
+.sc-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.sc-row:last-of-type { border-bottom: none; }
+.sc-row .r-label { color: rgba(255,255,255,0.65); font-size: 13px; }
+.sc-row .r-val { font-family: var(--font-mono); font-size: 13px; color: var(--text-secondary); }
+
+.sc-delta {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(200,140,80,0.1);
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+.sc-delta.negative { color: var(--red); }
+.sc-delta.positive { color: var(--green); }
+.sc-delta.neutral  { color: var(--text-dim); }
+
+/* ─── Metrics Row ─── */
+.metrics-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  margin-bottom: 1.25rem;
+}
+.metric {
+  background: var(--nova-surface);
+  border: 1px solid var(--nova-border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+}
+.metric-val {
+  font-family: var(--font-mono);
+  font-size: 1.4rem;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 5px;
+}
+.metric-lbl {
+  font-size: 13px;
+  color: var(--text-dim);
+  line-height: 1.4;
+}
+.col-blue   { color: var(--blue); }
+.col-red    { color: var(--red); }
+.col-green  { color: var(--green); }
+.col-orange { color: var(--orange); }
+.col-yellow { color: var(--yellow); }
+
+/* ─── Full Table ─── */
+table { width: 100%; border-collapse: collapse; }
+thead th {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--nova-border2);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+thead th:first-child { text-align: left; }
+thead th.h-peor  { color: var(--red);    }
+thead th.h-prom  { color: var(--orange); }
+thead th.h-mejor { color: var(--green);  }
+
+tbody td {
+  padding: 12px 10px;
+  text-align: center;
+  border-bottom: 1px solid rgba(200,140,80,0.06);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 0.1s;
+}
+tbody td:first-child {
+  text-align: left;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--text-primary);
+}
+tbody tr:hover td { background: rgba(255,255,255,0.04); }
+tbody tr.row-selected td { background: rgba(232,84,26,0.08); border-left: 2px solid var(--nova-lava); }
+
+/* ─── Two column layout ─── */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+/* ─── Calc rows ─── */
+.calc-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  gap: 1rem;
+}
+.calc-row:last-child { border-bottom: none; }
+.calc-label {
+  font-size: 14px;
+  color: rgba(255,255,255,0.80);
+  line-height: 1.4;
+}
+.calc-val {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-align: right;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.calc-row.total-row {
+  margin-top: 6px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,0.15);
+  border-bottom: none;
+}
+.calc-row.total-row .calc-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.calc-row.total-row .calc-val {
+  font-size: 18px;
+}
+
+/* ─── Coupon Impact Panel ─── */
+.impact-panel {
+  background: var(--nova-surface);
+  border: 1px solid var(--nova-border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  margin-bottom: 1.25rem;
+}
+.cp-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 1.25rem;
+}
+.cp-scen {
+  border-radius: var(--radius-md);
+  padding: 1.1rem;
+  border: 1px solid rgba(255,255,255,0.07);
+  background: var(--nova-surface2);
+}
+.cp-scen.s-peor  { border-left: 3px solid var(--red); }
+.cp-scen.s-prom  { border-left: 3px solid var(--orange); }
+.cp-scen.s-mejor { border-left: 3px solid var(--green); }
+
+.cp-head {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  margin-bottom: 0.75rem;
+}
+.s-peor  .cp-head { color: var(--red); }
+.s-prom  .cp-head { color: var(--orange); }
+.s-mejor .cp-head { color: var(--green); }
+
+.cp-delta {
+  font-family: var(--font-mono);
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+.cp-delta.negative { color: var(--red); }
+.cp-delta.positive { color: var(--green); }
+.cp-delta.neutral  { color: var(--text-dim); }
+
+.cp-desc {
+  font-size: 13px;
+  color: var(--text-dim);
+  margin-bottom: 0.85rem;
+}
+.cp-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.cp-row:last-of-type { border-bottom: none; }
+.cp-row .cp-r-label { color: rgba(255,255,255,0.65); }
+.cp-row .cp-r-val   { font-family: var(--font-mono); font-size: 13px; color: var(--text-secondary); }
+.cp-breakeven {
+  margin-top: 8px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: inline-block;
+}
+.cp-breakeven.safe   { background: rgba(62,207,114,0.1); color: var(--green); }
+.cp-breakeven.danger { background: var(--red-bg); color: var(--red); }
+
+/* ─── Assumptions ─── */
+.assumptions {
+  background: var(--nova-surface);
+  border: 1px solid var(--nova-border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  margin-bottom: 1.25rem;
+}
+.assumptions .notes-list {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 2;
+  padding-left: 0;
+  list-style: none;
+}
+.assumptions .notes-list li::before {
+  content: '—';
+  color: var(--nova-ember);
+  margin-right: 8px;
+  font-family: var(--font-mono);
+}
+
+/* ─── Footer ─── */
+.footer {
+  text-align: center;
+  margin-top: 3rem;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--nova-border);
+}
+
+/* ─── Divider ─── */
+.divider {
+  height: 1px;
+  background: rgba(255,255,255,0.07);
+  margin: 1.5rem 0;
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 1100px) {
+  .metrics-row    { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 900px) {
+  .vars-grid      { grid-template-columns: 1fr 1fr; }
+  .scen-grid      { grid-template-columns: 1fr; }
+  .metrics-row    { grid-template-columns: repeat(2, 1fr); }
+  .two-col        { grid-template-columns: 1fr; }
+  .cp-grid        { grid-template-columns: 1fr; }
+  .header h1      { font-size: 2.2rem; }
+  /* Table: allow horizontal scroll */
+  .card           { overflow-x: auto; }
+  table           { min-width: 700px; }
+  /* Size tabs: wrap naturally */
+  .size-bar       { gap: 8px; }
+  .sztab-wrap     { min-width: 90px; }
+}
+@media (max-width: 600px) {
+  body            { padding: 1.25rem 0.85rem 4rem; }
+  .vars-grid      { grid-template-columns: 1fr; }
+  .metrics-row    { grid-template-columns: 1fr 1fr; }
+  .header h1      { font-size: 1.75rem; }
+  .sc-margen      { font-size: 1.4rem; }
+  .header-top     { flex-direction: column; gap: 1rem; }
+  .header-right   { align-items: flex-start; }
+  .plan-bar       { gap: 5px; }
+  .ptab           { padding: 8px 14px; font-size: 13px; }
+  .size-bar       { gap: 6px; }
+  .sztab          { padding: 6px 10px; font-size: 12px; }
+  .cap-input-row  { max-width: 110px; }
+  .cap-input      { font-size: 11px; }
+  .scen-grid      { gap: 8px; }
+  .scen-card      { padding: 1rem; }
+  .metric         { padding: 10px 12px; }
+  .metric-val     { font-size: 1.1rem; }
+  .two-col        { gap: 0.85rem; }
+  .card           { padding: 1rem; overflow-x: auto; }
+  table           { min-width: 620px; }
+  .vars-grid      { gap: 0.85rem; }
+  .variables-panel { padding: 1rem; }
+  .impact-panel   { padding: 1rem; }
+}
+@media (max-width: 400px) {
+  body            { padding: 1rem 0.65rem 3rem; }
+  .header h1      { font-size: 1.5rem; }
+  .metrics-row    { grid-template-columns: 1fr; }
+  .ptab           { padding: 7px 10px; font-size: 12px; }
+}
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- ─── HEADER ─── -->
+  <header class="header">
+    <div class="header-top">
+      <div class="header-left">
+        <div class="header-eyebrow"><span data-es>Modelo Financiero Interno</span><span data-en>Internal Financial Model</span></div>
+        <h1>
+          <span class="brand">NovaProp</span>
+          <span class="plain"> — Analizador<br>de Rentabilidad</span>
+        </h1>
+        <p class="header-sub"><span data-es>Simulación de sostenibilidad: ventas, payouts y comisiones por plan, tamaño de cuenta y escenario</span><span data-en>Sustainability simulation: sales, payouts and commissions by plan, account size and scenario</span></p>
+      </div>
+      <div class="header-right">
+        <div class="lang-toggle">
+          <button class="lang-btn active" onclick="setLang('es')">ES</button>
+          <button class="lang-btn" onclick="setLang('en')">EN</button>
+        </div>
+        <div class="header-badge"><span data-es>Uso Confidencial</span><span data-en>Internal Use Only</span></div>
+        <div class="header-version">v3.0 · Abril 2026</div>
+      </div>
+    </div>
+    <div class="header-divider"></div>
+  </header>
+
+  <!-- ─── PLAN TABS ─── -->
+  <div class="section-label"><span data-es>Selecciona el plan</span><span data-en>Select plan</span></div>
+  <div class="plan-bar" id="plan-bar">
+    <button class="ptab active" onclick="setPlan('nebula',this)"><span data-es>Nebula 3 Pasos</span><span data-en>Nebula 3-Step</span></button>
+    <button class="ptab" onclick="setPlan('orbit',this)"><span data-es>Orbit 2 Pasos</span><span data-en>Orbit 2-Step</span></button>
+    <button class="ptab" onclick="setPlan('nova',this)"><span data-es>Nova Prime 1 Paso</span><span data-en>Nova Prime 1-Step</span></button>
+    <button class="ptab" onclick="setPlan('supernova',this)"><span data-es>Supernova Instantáneo</span><span data-en>Supernova Instant</span></button>
+  </div>
+
+  <!-- ─── SIZE TABS ─── -->
+  <div class="section-label"><span data-es>Tamaño de cuenta</span><span data-en>Account size</span></div>
+  <div class="size-bar" id="size-bar"></div>
+
+  <!-- ─── SAVE DEFAULTS ─── -->
+  <div class="save-defaults-wrap">
+    <span class="save-confirm" id="save-confirm"></span>
+    <button class="save-defaults-btn" onclick="saveDefaults()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
+      </svg>
+      <span data-es>Guardar como predeterminado</span><span data-en>Save as default</span>
+    </button>
+  </div>
+
+  <!-- ─── VARIABLES PANEL ─── -->
+  <div class="variables-panel">
+    <span class="card-title"><span data-es>Variables del modelo</span><span data-en>Model variables</span></span>
+    <div class="vars-grid">
+
+      <!-- Cupón -->
+      <div class="var-group">
+        <div class="var-label"><span data-es>Cupón de descuento</span><span data-en>Discount coupon</span></div>
+        <div class="var-sublabel"><span data-es>Se aplica al precio de venta antes de las comisiones</span><span data-en>Applied to the sale price before commissions</span></div>
+        <div class="var-input-wrap">
+          <input type="number" id="inp-coupon" min="0" max="99" step="0.1" value="0" oninput="update()"/>
+          <span class="var-unit">%</span>
+        </div>
+        <div class="var-result" id="res-coupon">Sin descuento activo</div>
+      </div>
+
+      <!-- Comisión Referido -->
+      <div class="var-group">
+        <div class="var-label"><span data-es>Comisión de referido</span><span data-en>Referral commission</span></div>
+        <div class="var-sublabel"><span data-es>Porcentaje del precio final (con cupón) que se paga al referidor por cada venta</span><span data-en>Percentage of the final price (with coupon) paid to the referrer per sale</span></div>
+        <div class="var-input-wrap">
+          <input type="number" id="inp-referral" min="0" max="99" step="0.1" value="0" oninput="update()"/>
+          <span class="var-unit">%</span>
+        </div>
+        <div class="var-result" id="res-referral">Sin comisión de referido</div>
+      </div>
+
+      <!-- Comisión Embajador -->
+      <div class="var-group">
+        <div class="var-label"><span data-es>Comisión de embajador</span><span data-en>Ambassador commission</span></div>
+        <div class="var-sublabel"><span data-es>Porcentaje adicional sobre el precio final. El embajador recibe: comisión referido + esta comisión adicional</span><span data-en>Additional percentage on the final price. Ambassador receives: referral commission + this additional rate</span></div>
+        <div class="var-input-wrap">
+          <input type="number" id="inp-ambassador" min="0" max="99" step="0.1" value="0" oninput="update()"/>
+          <span class="var-unit">%</span>
+        </div>
+        <div class="var-result" id="res-ambassador">Sin comisión adicional de embajador</div>
+      </div>
+
+    </div>
+
+    <!-- Commission total summary -->
+    <div class="comm-total-badge" id="comm-total-badge">
+      <span class="ct-label"><span data-es>Egreso total por comisiones por cada 100 ventas —</span><span data-en>Total commission outflow per 100 sales —</span></span>
+      <span id="comm-total-val">$0.00</span>
+    </div>
+  </div>
+
+  <!-- ─── 3-SCENARIO GRID ─── -->
+  <div class="section-label"><span data-es>Los tres escenarios en paralelo</span><span data-en>Three scenarios side by side</span> — <span id="size-label-head">—</span></div>
+  <div class="scen-grid">
+    <div class="scen-card s-peor">
+      <div class="sc-head"><span data-es>Peor caso</span><span data-en>Worst case</span></div>
+      <div class="sc-margen" id="sc-peor-margen">—</div>
+      <div class="sc-pct"   id="sc-peor-pct">—</div>
+      <div class="sc-row"><span class="r-label"><span data-es>Ingreso neto (con cupón y comisiones)</span><span data-en>Net income (coupon & commissions applied)</span></span><span class="r-val" id="sc-peor-ing">—</span></div>
+      <div class="sc-row"><span class="r-label"><span data-es>Payout total a traders</span><span data-en>Total trader payout</span></span><span class="r-val" id="sc-peor-pay">—</span></div>
+      <div class="sc-row"><span class="r-label"><span data-es>Comisiones totales pagadas</span><span data-en>Total commissions paid</span></span><span class="r-val" id="sc-peor-comm">—</span></div>
+      <div class="sc-row"><span class="r-label">Pass rate</span><span class="r-val" id="sc-peor-pr">—</span></div>
+      <div class="sc-row"><span class="r-label"><span data-es>Traders que retiran</span><span data-en>Traders that withdraw</span></span><span class="r-val" id="sc-peor-ret">—</span></div>
+      <div class="sc-delta" id="sc-peor-delta">—</div>
+    </div>
+    <div class="scen-card s-prom">
+      <div class="sc-head"><span data-es>Caso promedio</span><span data-en>Average case</span></div>
+      <div class="sc-margen" id="sc-prom-margen">—</div>
+      <div class="sc-pct"   id="sc-prom-pct">—</div>
+      <div class="sc-row"><span class="r-label"><span data-es>Ingreso neto (con cupón y comisiones)</span><span data-en>Net income (coupon & commissions applied)</span></span><span class="r-val" id="sc-prom-ing">—</span></div>
+      <div class="sc-row"><span class="r-label"><span data-es>Payout total a traders</span><span data-en>Total trader payout</span></span><span class="r-val" id="sc-prom-pay">—</span></div>
+      <div class="sc-row"><span class="r-label"><span data-es>Comisiones totales pagadas</span><span data-en>Total commissions paid</span></span><span class="r-val" id="sc-prom-comm">—</span></div>
+      <div class="sc-row"><span class="r-label">Pass rate</span><span class="r-val" id="sc-prom-pr">—</span></div>
+      <div class="sc-row"><span class="r-label"><span data-es>Traders que retiran</span><span data-en>Traders that withdraw</span></span><span class="r-val" id="sc-prom-ret">—</span></div>
+      <div class="sc-delta" id="sc-prom-delta">—</div>
+    </div>
+    <div class="scen-card s-mejor">
+      <div class="sc-head"><span data-es>Mejor caso</span><span data-en>Best case</span></div>
+      <div class="sc-margen" id="sc-mejor-margen">—</div>
+      <div class="sc-pct"   id="sc-mejor-pct">—</div>
+      <div class="sc-row"><span class="r-label"><span data-es>Ingreso neto (con cupón y comisiones)</span><span data-en>Net income (coupon & commissions applied)</span></span><span class="r-val" id="sc-mejor-ing">—</span></div>
+      <div class="sc-row"><span class="r-label"><span data-es>Payout total a traders</span><span data-en>Total trader payout</span></span><span class="r-val" id="sc-mejor-pay">—</span></div>
+      <div class="sc-row"><span class="r-label"><span data-es>Comisiones totales pagadas</span><span data-en>Total commissions paid</span></span><span class="r-val" id="sc-mejor-comm">—</span></div>
+      <div class="sc-row"><span class="r-label">Pass rate</span><span class="r-val" id="sc-mejor-pr">—</span></div>
+      <div class="sc-row"><span class="r-label"><span data-es>Traders que retiran</span><span data-en>Traders that withdraw</span></span><span class="r-val" id="sc-mejor-ret">—</span></div>
+      <div class="sc-delta" id="sc-mejor-delta">—</div>
+    </div>
+  </div>
+
+  <!-- ─── METRICS ROW ─── -->
+  <div class="metrics-row">
+    <div class="metric">
+      <div class="metric-val col-blue" id="m-precio-oficial">—</div>
+      <div class="metric-lbl"><span data-es>Precio oficial de lista</span><span data-en>Official list price</span></div>
+    </div>
+    <div class="metric">
+      <div class="metric-val col-yellow" id="m-precio-final">—</div>
+      <div class="metric-lbl"><span data-es>Precio final al comprador (con cupón)</span><span data-en>Final buyer price (with coupon)</span></div>
+    </div>
+    <div class="metric">
+      <div class="metric-val col-red" id="m-perdida-cupon">—</div>
+      <div class="metric-lbl"><span data-es>Reducción de ingreso por cupón (100 ventas)</span><span data-en>Income reduction from coupon (100 sales)</span></div>
+    </div>
+    <div class="metric">
+      <div class="metric-val col-red" id="m-perdida-comm">—</div>
+      <div class="metric-lbl"><span data-es>Egreso total en comisiones (100 ventas)</span><span data-en>Total commission outflow (100 sales)</span></div>
+    </div>
+    <div class="metric">
+      <div class="metric-val" id="m-descuento-max">—</div>
+      <div class="metric-lbl"><span data-es>Cupón máximo sostenible (peor caso, sin comisiones)</span><span data-en>Max sustainable coupon (worst case, no commissions)</span></div>
+    </div>
+  </div>
+
+  <!-- ─── FULL TABLE ─── -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title"><span data-es>Todos los tamaños — margen neto por 100 ventas en los tres escenarios</span><span data-en>All sizes — net margin per 100 sales across three scenarios</span></span>
+      <span class="card-title" style="color: var(--nova-ember);" id="table-vars-label">—</span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th><span data-es>Tamaño</span><span data-en>Size</span></th>
+          <th><span data-es>Precio oficial</span><span data-en>Official price</span></th>
+          <th><span data-es>Precio con cupón</span><span data-en>Price with coupon</span></th>
+          <th class="h-peor"><span data-es>Margen peor caso</span><span data-en>Worst case margin</span></th>
+          <th class="h-peor"><span data-es>Porcentaje</span><span data-en>Percentage</span></th>
+          <th class="h-prom"><span data-es>Margen promedio</span><span data-en>Average margin</span></th>
+          <th class="h-prom"><span data-es>Porcentaje</span><span data-en>Percentage</span></th>
+          <th class="h-mejor"><span data-es>Margen mejor caso</span><span data-en>Best case margin</span></th>
+          <th class="h-mejor"><span data-es>Porcentaje</span><span data-en>Percentage</span></th>
+        </tr>
+      </thead>
+      <tbody id="full-table"></tbody>
+    </table>
+  </div>
+
+  <!-- ─── BREAKDOWN + ASSUMPTIONS ─── -->
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title" style="display:block; margin-bottom:0.85rem;"><span data-es>Desglose paso a paso</span><span data-en>Step-by-step breakdown</span></div>
+      <div class="breakdown-scen-bar">
+        <button class="bstab bs-peor" onclick="setBreakdownScen('peor',this)"><span data-es>Peor caso</span><span data-en>Worst case</span></button>
+        <button class="bstab bs-prom active" onclick="setBreakdownScen('prom',this)"><span data-es>Promedio</span><span data-en>Average</span></button>
+        <button class="bstab bs-mejor" onclick="setBreakdownScen('mejor',this)"><span data-es>Mejor caso</span><span data-en>Best case</span></button>
+      </div>
+
+      <div class="calc-row">
+        <span class="calc-label">1. <span data-es>Precio oficial de lista</span><span data-en>Official list price</span></span>
+        <span class="calc-val col-blue" id="d-precio">—</span>
+      </div>
+      <div class="calc-row">
+        <span class="calc-label">2. <span data-es>Precio final al comprador (cupón aplicado)</span><span data-en>Final buyer price (coupon applied)</span></span>
+        <span class="calc-val col-yellow" id="d-precio-c">—</span>
+      </div>
+      <div class="calc-row">
+        <span class="calc-label">3. <span data-es>Ingreso bruto 100 ventas (precio oficial × 100)</span><span data-en>Gross income 100 sales (official price × 100)</span></span>
+        <span class="calc-val col-blue" id="d-ing-bruto">—</span>
+      </div>
+      <div class="calc-row">
+        <span class="calc-label">4. <span data-es>Ingreso bruto con cupón (precio final × 100)</span><span data-en>Gross income with coupon (final price × 100)</span></span>
+        <span class="calc-val col-yellow" id="d-ing-cupon">—</span>
+      </div>
+      <div class="calc-row">
+        <span class="calc-label">5. <span data-es>Comisión de referido por venta</span><span data-en>Referral commission per sale</span></span>
+        <span class="calc-val col-red" id="d-ref-venta">—</span>
+      </div>
+      <div class="calc-row">
+        <span class="calc-label">6. <span data-es>Comisión de embajador por venta (referido + adicional)</span><span data-en>Ambassador commission per sale (referral + additional)</span></span>
+        <span class="calc-val col-red" id="d-amb-venta">—</span>
+      </div>
+      <div class="calc-row">
+        <span class="calc-label">7. <span data-es>Total comisiones por 100 ventas</span><span data-en>Total commissions for 100 sales</span></span>
+        <span class="calc-val col-red" id="d-comm-total">—</span>
+      </div>
+      <div class="calc-row">
+        <span class="calc-label">8. <span data-es>Ingreso neto después de cupón y comisiones</span><span data-en>Net income after coupon and commissions</span></span>
+        <span class="calc-val" id="d-ing-neto">—</span>
+      </div>
+      <div class="calc-row">
+        <span class="calc-label">9. <span data-es>Pass rate del escenario</span><span data-en>Scenario pass rate</span></span>
+        <span class="calc-val" id="d-passrate">—</span>
+      </div>
+      <div class="calc-row">
+        <span class="calc-label">10. <span data-es>Número de traders que retiran</span><span data-en>Number of traders that withdraw</span></span>
+        <span class="calc-val col-orange" id="d-retiran">—</span>
+      </div>
+      <div class="calc-row">
+        <span class="calc-label">11. <span data-es>Tope de retiro del plan</span><span data-en>Plan withdrawal cap</span></span>
+        <span class="calc-val" id="d-tope">—</span>
+      </div>
+      <div class="calc-row">
+        <span class="calc-label">12. <span data-es>Retiro real según escenario</span><span data-en>Actual withdrawal per scenario</span></span>
+        <span class="calc-val" id="d-retiro-real">—</span>
+      </div>
+      <div class="calc-row">
+        <span class="calc-label">13. <span data-es>Porcentaje que retiene NovaProp (profit split)</span><span data-en>NovaProp's share (profit split)</span></span>
+        <span class="calc-val" id="d-firmsplit">—</span>
+      </div>
+      <div class="calc-row">
+        <span class="calc-label">14. <span data-es>Payout por trader</span><span data-en>Payout per trader</span></span>
+        <span class="calc-val" id="d-payout-trader">—</span>
+      </div>
+      <div class="calc-row">
+        <span class="calc-label">15. <span data-es>Payout total a todos los traders</span><span data-en>Total payout to all traders</span></span>
+        <span class="calc-val col-red" id="d-payout-total">—</span>
+      </div>
+      <div class="calc-row total-row">
+        <span class="calc-label">16. <span data-es>Margen neto final (ingreso neto − payout total)</span><span data-en>Final net margin (net income − total payout)</span></span>
+        <span class="calc-val" id="d-margen-final">—</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title" style="display:block; margin-bottom:1.1rem;"><span data-es>Supuestos del modelo</span><span data-en>Model assumptions</span></div>
+      <div class="calc-row">
+        <span class="calc-label"><span data-es>Modelo de negocio</span><span data-en>Business model</span></span>
+        <span class="calc-val"><span data-es>Cuentas simuladas (prop firm)</span><span data-en>Simulated accounts (prop firm)</span></span>
+      </div>
+      <div class="calc-row">
+        <span class="calc-label"><span data-es>Fuente de ingreso</span><span data-en>Revenue source</span></span>
+        <span class="calc-val"><span data-es>100% ventas de desafíos</span><span data-en>100% challenge sales</span></span>
+      </div>
+      <div class="calc-row">
+        <span class="calc-label"><span data-es>Fuente de egreso operativo</span><span data-en>Operational outflow</span></span>
+        <span class="calc-val"><span data-es>Payouts a traders fondeados</span><span data-en>Payouts to funded traders</span></span>
+      </div>
+      <div class="calc-row">
+        <span class="calc-label"><span data-es>Unidad de análisis base</span><span data-en>Base analysis unit</span></span>
+        <span class="calc-val"><span data-es>100 ventas por ciclo</span><span data-en>100 sales per cycle</span></span>
+      </div>
+      <div class="calc-row">
+        <span class="calc-label"><span data-es>Profit split (tier inicial)</span><span data-en>Profit split (initial tier)</span></span>
+        <span class="calc-val">Nebula / Orbit / Nova: 80% trader · Supernova: 70% trader</span>
+      </div>
+      <div class="calc-row">
+        <span class="calc-label"><span data-es>Comisiones</span><span data-en>Commissions</span></span>
+        <span class="calc-val"><span data-es>Se pagan sobre cada venta, sin importar si el trader pasa o no</span><span data-en>Paid on every sale regardless of whether the trader passes</span></span>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="card-title" style="display:block; margin-bottom:0.75rem;"><span data-es>Factores favorables no capturados en este modelo</span><span data-en>Favorable factors not captured in this model</span></div>
+      <ul class="notes-list">
+        <li><span data-es>Desfase temporal de 60 a 90 días entre la venta y el primer payout</span><span data-en>60 to 90-day lag between sale and first payout</span></li>
+        <li><span data-es>Recompras de traders que fallan representan ingreso puro sin egreso asociado</span><span data-en>Repurchases by failing traders represent pure income with no associated outflow</span></li>
+        <li><span data-es>Traders fondeados que no solicitan retiro en cada ciclo</span><span data-en>Funded traders who do not request a withdrawal every cycle</span></li>
+        <li><span data-es>La regla de consistencia distribuye los payouts y reduce la concentración de egresos</span><span data-en>The consistency rule spreads payouts and reduces outflow concentration</span></li>
+        <li><span data-es>La regla de trades válidos limita el profit retirable por ciclo</span><span data-en>The valid trades rule limits withdrawable profit per cycle</span></li>
+        <li><span data-es>Apalancamiento reducido en activos de alta volatilidad limita el profit real que los traders pueden generar</span><span data-en>Reduced leverage on high-volatility assets caps the real profit traders can generate</span></li>
+        <li><span data-es>Prohibición de copy trading, operaciones en noticias de alto impacto y otras restricciones del programa reducen la tasa real de traders que alcanzan el umbral de retiro</span><span data-en>Bans on copy trading, high-impact news trading and other program restrictions lower the effective rate of traders reaching the withdrawal threshold</span></li>
+        <li><span data-es>Días mínimos de operación y reglas de inactividad reducen la frecuencia con que traders fondeados califican para retiro en cada ciclo</span><span data-en>Minimum trading days and inactivity rules reduce how often funded traders qualify for withdrawal each cycle</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ─── COUPON IMPACT DEEP DIVE ─── -->
+  <div class="impact-panel">
+    <div class="card-title"><span data-es>Impacto detallado del cupón y comisiones por escenario</span><span data-en>Detailed coupon and commission impact by scenario</span> — <span id="cp-size-label">—</span></div>
+    <div class="cp-grid">
+      <div class="cp-scen s-peor">
+        <div class="cp-head"><span data-es>Peor caso</span><span data-en>Worst case</span></div>
+        <div class="cp-delta" id="cp-peor-delta">—</div>
+        <div class="cp-desc" id="cp-peor-desc">—</div>
+        <div class="cp-row"><span class="cp-r-label"><span data-es>Margen sin cupón ni comisiones</span><span data-en>Margin without coupon or commissions</span></span><span class="cp-r-val" id="cp-peor-base">—</span></div>
+        <div class="cp-row"><span class="cp-r-label"><span data-es>Margen con cupón y comisiones</span><span data-en>Margin with coupon and commissions</span></span><span class="cp-r-val" id="cp-peor-con">—</span></div>
+        <div class="cp-row"><span class="cp-r-label"><span data-es>Ingreso reducido por cupón</span><span data-en>Income reduced by coupon</span></span><span class="cp-r-val" id="cp-peor-lost-cupon" style="color:var(--red)">—</span></div>
+        <div class="cp-row"><span class="cp-r-label"><span data-es>Egreso adicional en comisiones</span><span data-en>Additional commission outflow</span></span><span class="cp-r-val" id="cp-peor-lost-comm" style="color:var(--red)">—</span></div>
+        <div class="cp-breakeven" id="cp-peor-be">—</div>
+      </div>
+      <div class="cp-scen s-prom">
+        <div class="cp-head"><span data-es>Caso promedio</span><span data-en>Average case</span></div>
+        <div class="cp-delta" id="cp-prom-delta">—</div>
+        <div class="cp-desc" id="cp-prom-desc">—</div>
+        <div class="cp-row"><span class="cp-r-label"><span data-es>Margen sin cupón ni comisiones</span><span data-en>Margin without coupon or commissions</span></span><span class="cp-r-val" id="cp-prom-base">—</span></div>
+        <div class="cp-row"><span class="cp-r-label"><span data-es>Margen con cupón y comisiones</span><span data-en>Margin with coupon and commissions</span></span><span class="cp-r-val" id="cp-prom-con">—</span></div>
+        <div class="cp-row"><span class="cp-r-label"><span data-es>Ingreso reducido por cupón</span><span data-en>Income reduced by coupon</span></span><span class="cp-r-val" id="cp-prom-lost-cupon" style="color:var(--red)">—</span></div>
+        <div class="cp-row"><span class="cp-r-label"><span data-es>Egreso adicional en comisiones</span><span data-en>Additional commission outflow</span></span><span class="cp-r-val" id="cp-prom-lost-comm" style="color:var(--red)">—</span></div>
+        <div class="cp-breakeven" id="cp-prom-be">—</div>
+      </div>
+      <div class="cp-scen s-mejor">
+        <div class="cp-head"><span data-es>Mejor caso</span><span data-en>Best case</span></div>
+        <div class="cp-delta" id="cp-mejor-delta">—</div>
+        <div class="cp-desc" id="cp-mejor-desc">—</div>
+        <div class="cp-row"><span class="cp-r-label"><span data-es>Margen sin cupón ni comisiones</span><span data-en>Margin without coupon or commissions</span></span><span class="cp-r-val" id="cp-mejor-base">—</span></div>
+        <div class="cp-row"><span class="cp-r-label"><span data-es>Margen con cupón y comisiones</span><span data-en>Margin with coupon and commissions</span></span><span class="cp-r-val" id="cp-mejor-con">—</span></div>
+        <div class="cp-row"><span class="cp-r-label"><span data-es>Ingreso reducido por cupón</span><span data-en>Income reduced by coupon</span></span><span class="cp-r-val" id="cp-mejor-lost-cupon" style="color:var(--red)">—</span></div>
+        <div class="cp-row"><span class="cp-r-label"><span data-es>Egreso adicional en comisiones</span><span data-en>Additional commission outflow</span></span><span class="cp-r-val" id="cp-mejor-lost-comm" style="color:var(--red)">—</span></div>
+        <div class="cp-breakeven" id="cp-mejor-be">—</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer"><span data-es>NovaProp — Modelo Financiero Interno v3.0 · Abril 2026 · Uso Estrictamente Confidencial</span><span data-en>NovaProp — Internal Financial Model v3.0 · April 2026 · Strictly Confidential</span></div>
+
+</div><!-- end wrapper -->
+
+<script>
+/* ─── Data ─── */
+const plans = {
+  nebula: {
+    label: 'Nebula 3 Pasos', labelEN: 'Nebula 3-Step',
+    accounts: [
+      { size: '$10,000', price: 69,  retiro: 500   },
+      { size: '$25,000', price: 149, retiro: 1000  },
+      { size: '$50,000', price: 249, retiro: 2500  },
+      { size: '$100,000',price: 419, retiro: 6000  },
+      { size: '$200,000',price: 749, retiro: 10000 }
+    ],
+    passRates:  { peor: 0.15, prom: 0.10, mejor: 0.06 },
+    retiroRates:{ peor: 0.90, prom: 0.55, mejor: 0.30 },
+    firmSplit:  { peor: 0.20, prom: 0.20, mejor: 0.20 },
+    defaultIdx: 2
+  },
+  orbit: {
+    label: 'Orbit 2 Pasos', labelEN: 'Orbit 2-Step',
+    accounts: [
+      { size: '$5,000',  price: 59,  retiro: 200  },
+      { size: '$10,000', price: 89,  retiro: 500  },
+      { size: '$25,000', price: 219, retiro: 1000 },
+      { size: '$50,000', price: 379, retiro: 2500 },
+      { size: '$100,000',price: 579, retiro: 6000 }
+    ],
+    passRates:  { peor: 0.22, prom: 0.16, mejor: 0.09 },
+    retiroRates:{ peor: 0.90, prom: 0.55, mejor: 0.30 },
+    firmSplit:  { peor: 0.20, prom: 0.20, mejor: 0.20 },
+    defaultIdx: 2
+  },
+  nova: {
+    label: 'Nova Prime 1 Paso', labelEN: 'Nova Prime 1-Step',
+    accounts: [
+      { size: '$5,000',  price: 69,  retiro: 200  },
+      { size: '$10,000', price: 99,  retiro: 500  },
+      { size: '$25,000', price: 249, retiro: 1000 },
+      { size: '$50,000', price: 419, retiro: 2500 },
+      { size: '$100,000',price: 619, retiro: 6000 }
+    ],
+    passRates:  { peor: 0.30, prom: 0.22, mejor: 0.12 },
+    retiroRates:{ peor: 0.90, prom: 0.55, mejor: 0.30 },
+    firmSplit:  { peor: 0.20, prom: 0.20, mejor: 0.20 },
+    defaultIdx: 2
+  },
+  supernova: {
+    label: 'Supernova Instantáneo', labelEN: 'Supernova Instant',
+    accounts: [
+      { size: '$5,000',  price: 259,  retiro: 400  },
+      { size: '$10,000', price: 499,  retiro: 900  },
+      { size: '$25,000', price: 949,  retiro: 2000 },
+      { size: '$50,000', price: 1849, retiro: 5000 }
+    ],
+    passRates:  { peor: 0.70, prom: 0.55, mejor: 0.35 },
+    retiroRates:{ peor: 0.90, prom: 0.60, mejor: 0.35 },
+    firmSplit:  { peor: 0.30, prom: 0.30, mejor: 0.30 },
+    defaultIdx: 1
+  }
+};
+
+let currentPlan = 'nebula';
+let currentIdx  = 2;
+
+/* ─── Formatters (NO rounding on dollars) ─── */
+const fmtUSD = n => {
+  const abs = Math.abs(n);
+  const sign = n < 0 ? '-' : '';
+  return sign + '$' + abs.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+};
+const fmtPct = n => (n * 100).toFixed(2) + '%';
+const fmtPctInput = n => n.toFixed(2) + '%';
+
+/* ─── Custom caps store ─── */
+// key: "planKey-idx" → custom retiro value (or undefined = use default)
+const customCaps   = {};
+const customPrices = {};
+
+function capKey(planKey, idx) { return planKey + '-' + idx; }
+
+function getCap(planKey, idx) {
+  const k = capKey(planKey, idx);
+  return k in customCaps ? customCaps[k] : plans[planKey].accounts[idx].retiro;
+}
+
+function priceKey(planKey, idx) { return 'p-' + planKey + '-' + idx; }
+
+function getPrice(planKey, idx) {
+  const k = priceKey(planKey, idx);
+  return k in customPrices ? customPrices[k] : plans[planKey].accounts[idx].price;
+}
+
+function setPrice(idx, val) {
+  const k = priceKey(currentPlan, idx);
+  const def = plans[currentPlan].accounts[idx].price;
+  if (isNaN(val) || val <= 0) return;
+  if (val === def) { delete customPrices[k]; } else { customPrices[k] = val; }
+  const wraps = document.querySelectorAll('.sztab-wrap');
+  if (wraps[idx]) {
+    const inp = wraps[idx].querySelector('.price-input');
+    const row = wraps[idx].querySelector('.price-input-row');
+    const rst = wraps[idx].querySelector('.price-reset');
+    const isModified = k in customPrices;
+    if (inp) inp.classList.toggle('price-modified', isModified);
+    if (row) row.classList.toggle('modified', isModified);
+    if (rst) rst.classList.toggle('visible', isModified);
+  }
+  // Re-render tabs fully if best size changed
+  const newBestP = getBestIdx(currentPlan);
+  const prevBestP = document.querySelector('.sztab.best');
+  const prevBestIdxP = prevBestP ? [...document.querySelectorAll('.sztab')].indexOf(prevBestP) : -1;
+  if (newBestP !== prevBestIdxP) {
+    renderSizeTabs();
+  }
+  update();
+}
+
+function resetPrice(idx) {
+  delete customPrices[priceKey(currentPlan, idx)];
+  renderSizeTabs();
+  update();
+}
+
+function setCap(idx, val) {
+  const k = capKey(currentPlan, idx);
+  const def = plans[currentPlan].accounts[idx].retiro;
+  if (isNaN(val) || val <= 0) return; // ignore invalid while typing
+  if (val === def) {
+    delete customCaps[k];
+  } else {
+    customCaps[k] = val;
+  }
+  // Update visual state of this specific input without re-rendering all tabs
+  const wraps = document.querySelectorAll('.sztab-wrap');
+  if (wraps[idx]) {
+    const inp = wraps[idx].querySelector('.cap-input');
+    const row = wraps[idx].querySelector('.cap-input-row');
+    const rst = wraps[idx].querySelector('.cap-reset');
+    const isModified = k in customCaps;
+    if (inp) inp.classList.toggle('cap-modified', isModified);
+    if (row) row.classList.toggle('modified', isModified);
+    if (rst) rst.classList.toggle('visible', isModified);
+  }
+  // Re-render tabs fully if best size changed (badge + .best class must move)
+  const newBest = getBestIdx(currentPlan);
+  const prevBestEl = document.querySelector('.sztab.best');
+  const prevBestIdx = prevBestEl ? [...document.querySelectorAll('.sztab')].indexOf(prevBestEl) : -1;
+  if (newBest !== prevBestIdx) {
+    renderSizeTabs();
+  }
+  update();
+}
+
+function resetCap(idx) {
+  delete customCaps[capKey(currentPlan, idx)];
+  // Re-render is fine here since user clicked a button (not typing)
+  renderSizeTabs();
+  update();
+}
+
+/* ─── Read inputs ─── */
+function getVars() {
+  const coupon      = Math.max(0, parseFloat(document.getElementById('inp-coupon').value)      || 0);
+  const referralPct = Math.max(0, parseFloat(document.getElementById('inp-referral').value)    || 0);
+  const ambassadorAddl = Math.max(0, parseFloat(document.getElementById('inp-ambassador').value) || 0);
+  return { coupon, referralPct, ambassadorAddl };
+}
+
+/* ─── Core calculation ─── */
+function calc(plan, scen, acc, coupon, referralPct, ambassadorAddl, retiroCap, priceOverride) {
+  const passRate   = plan.passRates[scen];
+  const retRate    = plan.retiroRates[scen];
+  const firmPct    = plan.firmSplit[scen];
+
+  const retiran    = Math.round(100 * passRate);
+  // Use custom cap if provided, otherwise acc.retiro
+  const capActual  = (retiroCap !== undefined && retiroCap > 0) ? retiroCap : acc.retiro;
+
+  // Price — priceOverride passed from update() when custom price is set
+  const precioOficial = (priceOverride !== undefined && priceOverride > 0) ? priceOverride : acc.price;
+  const precioCupon   = precioOficial * (1 - coupon / 100);
+
+  // Ingreso bruto
+  const ingresoBruto     = 100 * precioOficial;
+  const ingresoCupon     = 100 * precioCupon;
+
+  // Commissions per sale (applied on precioCupon)
+  const commReferidoVenta   = precioCupon * (referralPct / 100);
+  // Ambassador total = referral% + additional%
+  const commAmbTotalPct     = referralPct + ambassadorAddl;
+  const commAmbajadorVenta  = precioCupon * (commAmbTotalPct / 100);
+  // For the model: if ambassador is active they get the higher rate.
+  // We assume these are separate parties (one referral + one ambassador per sale each charging their own rate).
+  // If both exist on one sale, total comm = referral + ambassador(total).
+  // But typically either a referral OR an ambassador applies, not both simultaneously.
+  // We expose both and let the user decide by setting one to 0.
+  const commTotalVenta     = commReferidoVenta + commAmbajadorVenta;
+  const commTotal100       = commTotalVenta * 100;
+
+  // Net income after coupon and commissions
+  const ingresoNeto = ingresoCupon - commTotal100;
+
+  // Payouts — use custom cap if set
+  const retiroReal     = capActual * retRate;
+  const payoutXTrader  = retiroReal * (1 - firmPct);
+  const payoutTotal    = retiran * payoutXTrader;
+
+  // Margin
+  const margen = ingresoNeto - payoutTotal;
+  const margenPct = ingresoNeto !== 0 ? (margen / ingresoNeto) * 100 : 0;
+
+  // Baseline (no coupon, no commission)
+  const margenBase = ingresoBruto - payoutTotal;
+
+  return {
+    retiran, passRate, retRate, firmPct,
+    precioOficial, precioCupon,
+    ingresoBruto, ingresoCupon,
+    commReferidoVenta, commAmbajadorVenta, commTotalVenta, commTotal100,
+    ingresoNeto,
+    retiroReal, payoutXTrader, payoutTotal,
+    margen, margenPct,
+    margenBase,
+    capActual
+  };
+}
+
+/* ─── Breakeven coupon (no commissions) ─── */
+function breakevenCoupon(plan, scen, acc, retiroCap, priceOverride) {
+  const passRate = plan.passRates[scen];
+  const retRate  = plan.retiroRates[scen];
+  const firmPct  = plan.firmSplit[scen];
+  const retiran  = Math.round(100 * passRate);
+  const cap = (retiroCap !== undefined && retiroCap > 0) ? retiroCap : acc.retiro;
+  const payoutTotal = retiran * cap * retRate * (1 - firmPct);
+  const ingresoBruto = 100 * ((priceOverride !== undefined && priceOverride > 0) ? priceOverride : acc.price);
+  const maxD = (1 - payoutTotal / ingresoBruto) * 100;
+  return Math.max(0, maxD);
+}
+
+/* ─── Plan change ─── */
+function setPlan(p, el) {
+  currentPlan = p;
+  currentIdx  = getBestIdx(p);
+  document.querySelectorAll('.ptab').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  renderSizeTabs();
+  update();
+}
+
+function setSize(i) {
+  currentIdx = i;
+  document.querySelectorAll('.sztab').forEach((b, j) => b.classList.toggle('active', j === i));
+  update();
+}
+
+function getBestIdx(planKey) {
+  const plan = plans[planKey];
+  // Best = highest average margin % across all 3 scenarios (no variables)
+  // Margin % is the correct metric — absolute $ favors larger accounts unfairly
+  let bestIdx = 0, bestAvgPct = -Infinity;
+  plan.accounts.forEach((a, i) => {
+    const scens = ['peor', 'prom', 'mejor'];
+    const cap_i   = getCap(planKey, i);
+    const price_i = getPrice(planKey, i);
+    const avgPct = scens.reduce((sum, s) => {
+      const c = calc(plan, s, a, 0, 0, 0, cap_i, price_i);
+      return sum + c.margenPct;
+    }, 0) / 3;
+    if (avgPct > bestAvgPct) { bestAvgPct = avgPct; bestIdx = i; }
+  });
+  return bestIdx;
+}
+
+function renderSizeTabs() {
+  const plan = plans[currentPlan];
+  const bestIdx = getBestIdx(currentPlan);
+  document.getElementById('size-bar').innerHTML = plan.accounts.map((a, i) => {
+    const isBest   = i === bestIdx;
+    const isActive = i === currentIdx;
+    const k        = capKey(currentPlan, i);
+    const isModified = k in customCaps;
+    const capVal   = getCap(currentPlan, i);
+    const pk          = priceKey(currentPlan, i);
+    const isPriceModified = pk in customPrices;
+    const priceVal    = getPrice(currentPlan, i);
+    return `<div class="sztab-wrap">
+      <div class="price-wrap">
+        <span class="price-label">${currentLang==='es'?'Precio':'Price'}</span>
+        <div class="price-input-row${isPriceModified ? ' modified' : ''}">
+          <span class="price-prefix">$</span>
+          <input
+            class="price-input${isPriceModified ? ' price-modified' : ''}"
+            type="number"
+            min="1"
+            step="1"
+            value="${priceVal}"
+            oninput="setPrice(${i}, parseFloat(this.value))"
+            title="Precio del desafio para ${a.size}"
+          />
+        </div>
+        <button class="price-reset${isPriceModified ? ' visible' : ''}" onclick="resetPrice(${i})">↺ ${currentLang==='es'?'restablecer':'reset'}</button>
+      </div>
+      ${isBest ? `<span class="best-badge">${currentLang==='es'?'Mejor rendimiento':'Best performance'}</span>` : '<span style="height:18px;display:block"></span>'}
+      <button class="sztab${isActive ? ' active' : ''}${isBest ? ' best' : ''}" onclick="setSize(${i})">${a.size}</button>
+      <div class="cap-wrap">
+        <span class="cap-label">Tope de retiro</span>
+        <div class="cap-input-row${isModified ? ' modified' : ''}">
+          <span class="cap-prefix">$</span>
+          <input
+            class="cap-input${isModified ? ' cap-modified' : ''}"
+            type="number"
+            min="1"
+            step="50"
+            value="${capVal}"
+            oninput="setCap(${i}, parseFloat(this.value))"
+            title="Tope máximo de retiro para ${a.size}"
+          />
+        </div>
+        <button class="cap-reset${isModified ? ' visible' : ''}" onclick="resetCap(${i})">↺ restablecer</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ─── Color helpers ─── */
+const colorOf = v => v >= 0 ? 'var(--green)' : 'var(--red)';
+const clsOf   = v => v >= 0 ? 'positive' : 'negative';
+
+/* ─── Save defaults ─── */
+function saveDefaults() {
+  const plan = plans[currentPlan];
+  // Apply all custom prices and caps as new plan defaults
+  plan.accounts.forEach((a, i) => {
+    const pk = priceKey(currentPlan, i);
+    const ck = capKey(currentPlan, i);
+    if (pk in customPrices) {
+      a.price = customPrices[pk];
+      delete customPrices[pk];
+    }
+    if (ck in customCaps) {
+      a.retiro = customCaps[ck];
+      delete customCaps[ck];
+    }
+  });
+  // Re-render with updated defaults
+  renderSizeTabs();
+  update();
+  // Show confirmation
+  const conf = document.getElementById('save-confirm');
+  conf.textContent = currentLang === 'es' ? '✓ Guardado' : '✓ Saved';
+  conf.classList.add('show');
+  setTimeout(() => conf.classList.remove('show'), 2500);
+}
+
+/* ─── Breakdown scenario state ─── */
+let breakdownScen = 'prom';
+
+function setBreakdownScen(s, el) {
+  breakdownScen = s;
+  document.querySelectorAll('.bstab').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  update();
+}
+
+/* ─── Language ─── */
+let currentLang = 'es';
+
+function setLang(lang) {
+  currentLang = lang;
+  document.body.className = 'lang-' + lang;
+  document.querySelectorAll('.lang-btn').forEach(b => {
+    b.classList.toggle('active', b.textContent.trim().toLowerCase() === lang);
+  });
+}
+
+/* ─── Main update ─── */
+function update() {
+  const plan = plans[currentPlan];
+  const acc  = plan.accounts[currentIdx];
+  const { coupon, referralPct, ambassadorAddl } = getVars();
+  const currentCap   = getCap(currentPlan, currentIdx);
+  const currentPrice = getPrice(currentPlan, currentIdx);
+
+  const scens = ['peor', 'prom', 'mejor'];
+
+  // ── Input result labels ──
+  const resC = document.getElementById('res-coupon');
+  if (coupon === 0) {
+    resC.textContent = 'Sin descuento activo';
+    resC.className = 'var-result';
+  } else {
+    resC.textContent = `${currentLang==='es'?'Precio final':'Final price'}: ${fmtUSD(currentPrice * (1 - coupon / 100))} (−${coupon.toFixed(2)}%)`;
+    resC.className = 'var-result active';
+  }
+
+  const cProm = calc(plan, breakdownScen, acc, coupon, referralPct, ambassadorAddl, currentCap, currentPrice);
+
+  const resR = document.getElementById('res-referral');
+  if (referralPct === 0) {
+    resR.textContent = 'Sin comisión de referido';
+    resR.className = 'var-result';
+  } else {
+    resR.textContent = `${fmtUSD(cProm.commReferidoVenta)} ${currentLang==='es'?'por venta · ':'per sale · '}${fmtUSD(cProm.commReferidoVenta * 100)} ${currentLang==='es'?'por 100 ventas':'per 100 sales'}`;
+    resR.className = 'var-result active';
+  }
+
+  const resA = document.getElementById('res-ambassador');
+  if (ambassadorAddl === 0) {
+    resA.textContent = 'Sin comisión adicional de embajador';
+    resA.className = 'var-result';
+  } else {
+    const totalAmbPct = referralPct + ambassadorAddl;
+    resA.textContent = currentLang==='es' ? `Embajador recibe ${totalAmbPct.toFixed(2)}% total (referido ${referralPct.toFixed(2)}% + adicional ${ambassadorAddl.toFixed(2)}%) · ${fmtUSD(cProm.commAmbajadorVenta)} por venta` : `Ambassador receives ${totalAmbPct.toFixed(2)}% total (referral ${referralPct.toFixed(2)}% + additional ${ambassadorAddl.toFixed(2)}%) · ${fmtUSD(cProm.commAmbajadorVenta)} per sale`;
+    resA.className = cProm.commAmbajadorVenta > 0 ? 'var-result active' : 'var-result';
+  }
+
+  // Commission total badge
+  document.getElementById('comm-total-val').textContent = fmtUSD(cProm.commTotal100);
+
+  // ── 3-scenario cards ──
+  scens.forEach(s => {
+    const c    = calc(plan, s, acc, coupon, referralPct, ambassadorAddl, currentCap, currentPrice);
+    const c0   = calc(plan, s, acc, 0, 0, 0, currentCap, currentPrice);
+    const diff = c.margen - c0.margen;
+
+    const mEl = document.getElementById(`sc-${s}-margen`);
+    mEl.textContent = fmtUSD(c.margen);
+    mEl.className = 'sc-margen ' + clsOf(c.margen);
+
+    document.getElementById(`sc-${s}-pct`).textContent =
+      `${currentLang==='es'?'Margen':'Margin'} ${c.margenPct.toFixed(2)}% · ${c.retiran} ${currentLang==='es'?'de cada 100 traders retiran':'out of 100 traders withdraw'}`;
+
+    document.getElementById(`sc-${s}-ing`).textContent  = fmtUSD(c.ingresoNeto);
+    document.getElementById(`sc-${s}-pay`).textContent  = fmtUSD(c.payoutTotal);
+    document.getElementById(`sc-${s}-comm`).textContent = fmtUSD(c.commTotal100);
+    document.getElementById(`sc-${s}-pr`).textContent   = fmtPct(c.passRate);
+    document.getElementById(`sc-${s}-ret`).textContent  = c.retiran + ' traders';
+
+    const dEl = document.getElementById(`sc-${s}-delta`);
+    const anyAdjustment = coupon > 0 || referralPct > 0 || ambassadorAddl > 0;
+    if (anyAdjustment) {
+      dEl.textContent = (currentLang==='es'?'Impacto vs precio completo sin comisiones: ':'Impact vs full price no commissions: ') + (diff >= 0 ? '+' : '') + fmtUSD(diff);
+      dEl.className = 'sc-delta ' + (diff >= 0 ? 'positive' : 'negative');
+    } else {
+      dEl.textContent = currentLang==='es' ? 'Sin variables activas — precio completo, sin comisiones' : 'No active variables — full price, no commissions';
+      dEl.className = 'sc-delta neutral';
+    }
+  });
+
+  // ── Metrics row ──
+  const m_precioOficial = document.getElementById('m-precio-oficial');
+  m_precioOficial.textContent = fmtUSD(currentPrice);
+
+  const m_precioFinal = document.getElementById('m-precio-final');
+  m_precioFinal.textContent = coupon > 0 ? fmtUSD(cProm.precioCupon) : '—';
+  m_precioFinal.className = 'metric-val ' + (coupon > 0 ? 'col-yellow' : 'col-yellow');
+
+  const cuponLoss = coupon > 0 ? (cProm.ingresoBruto - cProm.ingresoCupon) : 0;
+  document.getElementById('m-perdida-cupon').textContent = coupon > 0 ? `-${fmtUSD(cuponLoss)}` : '$0.00';
+
+  const commLoss = cProm.commTotal100;
+  document.getElementById('m-perdida-comm').textContent = commLoss > 0 ? `-${fmtUSD(commLoss)}` : '$0.00';
+
+  const be = breakevenCoupon(plan, 'peor', acc, currentCap, currentPrice);
+  const beEl = document.getElementById('m-descuento-max');
+  beEl.textContent = be.toFixed(2) + '% máximo';
+  beEl.style.color = coupon <= be ? 'var(--green)' : 'var(--red)';
+
+  // ── Table vars label ──
+  const parts = [];
+  if (coupon > 0) parts.push(`${currentLang==='es'?'Cupón':'Coupon'} −${coupon.toFixed(2)}%`);
+  if (referralPct > 0) parts.push(`${currentLang==='es'?'Referido':'Referral'} ${referralPct.toFixed(2)}%`);
+  if (ambassadorAddl > 0) parts.push(`${currentLang==='es'?'Embajador':'Ambassador'} +${ambassadorAddl.toFixed(2)}%`);
+  document.getElementById('table-vars-label').textContent = parts.length > 0 ? parts.join(' · ') : (currentLang==='es'?'Sin variables activas':'No active variables');
+
+  // ── Breakdown panel (promedio) ──
+  document.getElementById('d-precio').textContent       = fmtUSD(acc.price);
+  document.getElementById('d-precio-c').textContent     = coupon > 0 ? fmtUSD(cProm.precioCupon) + ` (−${coupon.toFixed(2)}%)` : `${fmtUSD(acc.price)} (sin cupón)`;
+  document.getElementById('d-ing-bruto').textContent    = fmtUSD(cProm.ingresoBruto);
+  document.getElementById('d-ing-cupon').textContent    = fmtUSD(cProm.ingresoCupon);
+  document.getElementById('d-ref-venta').textContent    = referralPct > 0 ? `${fmtUSD(cProm.commReferidoVenta)} ${currentLang==='es'?'por venta':'per sale'} (${referralPct.toFixed(2)}% ${currentLang==='es'?'sobre':'on'} ${fmtUSD(cProm.precioCupon)})` : `$0.00 (${currentLang==='es'?'sin referido':'no referral'})`;
+  document.getElementById('d-amb-venta').textContent    = ambassadorAddl > 0 ? `${fmtUSD(cProm.commAmbajadorVenta)} ${currentLang==='es'?'por venta':'per sale'} (${(referralPct+ambassadorAddl).toFixed(2)}% ${currentLang==='es'?'total sobre':'total on'} ${fmtUSD(cProm.precioCupon)})` : `$0.00 (${currentLang==='es'?'sin embajador':'no ambassador'})`;
+  document.getElementById('d-comm-total').textContent   = `${fmtUSD(cProm.commTotal100)} (${fmtUSD(cProm.commTotalVenta)} × 100 ventas)`;
+  const inNeto = document.getElementById('d-ing-neto');
+  inNeto.textContent = fmtUSD(cProm.ingresoNeto);
+  inNeto.style.color = colorOf(cProm.ingresoNeto);
+  document.getElementById('d-passrate').textContent     = fmtPct(cProm.passRate);
+  document.getElementById('d-retiran').textContent      = cProm.retiran + (currentLang==='es' ? ' traders de 100' : ' traders out of 100');
+  const isCapModified = capKey(currentPlan, currentIdx) in customCaps;
+  document.getElementById('d-tope').textContent = fmtUSD(currentCap) + (isCapModified ? ` (${currentLang==='es'?'modificado — original':'modified — original'}: ${fmtUSD(acc.retiro)})` : ` (${currentLang==='es'?'tope original del plan':'original plan cap'})`);
+  const retRateLbl = currentLang === 'es' ? '% del tope' : '% of cap';
+  document.getElementById('d-retiro-real').textContent  = fmtUSD(cProm.retiroReal) + ' (' + fmtPct(cProm.retRate) + ' ' + retRateLbl + ')';
+  document.getElementById('d-firmsplit').textContent    = fmtPct(cProm.firmPct) + (currentLang==='es' ? ' retiene NovaProp · ' : ' retained by NovaProp · ') + fmtPct(1-cProm.firmPct) + (currentLang==='es' ? ' al trader' : ' to trader');
+  document.getElementById('d-payout-trader').textContent = fmtUSD(cProm.payoutXTrader) + (currentLang==='es' ? ' por trader' : ' per trader');
+  document.getElementById('d-payout-total').textContent = `${cProm.retiran} traders × ${fmtUSD(cProm.payoutXTrader)} = ${fmtUSD(cProm.payoutTotal)}`;
+  const dMargen = document.getElementById('d-margen-final');
+  dMargen.textContent = `${fmtUSD(cProm.ingresoNeto)} − ${fmtUSD(cProm.payoutTotal)} = ${fmtUSD(cProm.margen)}`;
+  dMargen.style.color = colorOf(cProm.margen);
+
+  // ── Full table ──
+  const tbody = document.getElementById('full-table');
+  tbody.innerHTML = plan.accounts.map((a, i) => {
+    const cap_i   = getCap(currentPlan, i);
+    const price_i = getPrice(currentPlan, i);
+    const r = {
+      peor:  calc(plan, 'peor',  a, coupon, referralPct, ambassadorAddl, cap_i, price_i),
+      prom:  calc(plan, 'prom',  a, coupon, referralPct, ambassadorAddl, cap_i, price_i),
+      mejor: calc(plan, 'mejor', a, coupon, referralPct, ambassadorAddl, cap_i, price_i)
+    };
+    const priceTxt = coupon > 0
+      ? `<span style="color:var(--text-dim);text-decoration:line-through;font-size:13px">${fmtUSD(a.price)}</span>`
+      : fmtUSD(a.price);
+    const finalTxt = coupon > 0 ? fmtUSD(a.price * (1 - coupon/100)) : '—';
+    return `<tr class="${i === currentIdx ? 'row-selected' : ''}" onclick="setSize(${i})">
+      <td>${a.size}</td>
+      <td>${priceTxt}</td>
+      <td style="color:${coupon > 0 ? 'var(--yellow)' : 'var(--text-dim)'}">${finalTxt}</td>
+      <td style="color:${colorOf(r.peor.margen)}">${fmtUSD(r.peor.margen)}</td>
+      <td style="color:${colorOf(r.peor.margen)}">${r.peor.margenPct.toFixed(2)}%</td>
+      <td style="color:${colorOf(r.prom.margen)}">${fmtUSD(r.prom.margen)}</td>
+      <td style="color:${colorOf(r.prom.margen)}">${r.prom.margenPct.toFixed(2)}%</td>
+      <td style="color:${colorOf(r.mejor.margen)}">${fmtUSD(r.mejor.margen)}</td>
+      <td style="color:${colorOf(r.mejor.margen)}">${r.mejor.margenPct.toFixed(2)}%</td>
+    </tr>`;
+  }).join('');
+
+  // ── Size labels ──
+  const planLbl = currentLang==='es' ? plan.label : plan.labelEN;
+  document.getElementById('size-label-head').textContent = `${planLbl} · ${acc.size}`;
+  document.getElementById('cp-size-label').textContent   = `${planLbl} · ${acc.size}`;
+
+  // ── Coupon/Commission impact panel ──
+  scens.forEach(s => {
+    const c  = calc(plan, s, acc, coupon, referralPct, ambassadorAddl, currentCap, currentPrice);
+    const c0 = calc(plan, s, acc, 0, 0, 0, currentCap, currentPrice);
+    const diff = c.margen - c0.margen;
+    const cuponLossS = c.ingresoBruto - c.ingresoCupon;
+    const commLossS  = c.commTotal100;
+    const be = breakevenCoupon(plan, s, acc, currentCap, currentPrice);
+    const anyActive = coupon > 0 || referralPct > 0 || ambassadorAddl > 0;
+
+    const dEl = document.getElementById(`cp-${s}-delta`);
+    dEl.textContent = anyActive
+      ? `${diff >= 0 ? '+' : ''}${fmtUSD(diff)} vs base`
+      : 'Sin variables activas';
+    dEl.className = 'cp-delta ' + (anyActive ? (diff >= 0 ? 'positive' : 'negative') : 'neutral');
+
+    document.getElementById(`cp-${s}-desc`).textContent = anyActive
+      ? `${currentLang==='es'?'Cupón':'Coupon'} −${coupon.toFixed(2)}% · ${currentLang==='es'?'Comisiones':'Commissions'} ${((referralPct + ambassadorAddl) > 0 ? (currentLang==='es'?'activas':'active') : (currentLang==='es'?'inactivas':'inactive'))}`
+      : (currentLang==='es'?'Configura las variables para ver el impacto':'Configure variables to see the impact');
+
+    const bEl = document.getElementById(`cp-${s}-base`);
+    bEl.textContent = fmtUSD(c0.margen);
+    bEl.style.color = colorOf(c0.margen);
+
+    const cEl = document.getElementById(`cp-${s}-con`);
+    cEl.textContent = fmtUSD(c.margen);
+    cEl.style.color = colorOf(c.margen);
+
+    document.getElementById(`cp-${s}-lost-cupon`).textContent = coupon > 0 ? `−${fmtUSD(cuponLossS)}` : '$0.00';
+    document.getElementById(`cp-${s}-lost-comm`).textContent  = commLossS > 0 ? `−${fmtUSD(commLossS)}` : '$0.00';
+
+    const beEl = document.getElementById(`cp-${s}-be`);
+    if (be > 0) {
+      beEl.textContent = `${currentLang==='es'?'Cupón máximo sostenible':'Max sustainable coupon'}: ${be.toFixed(2)}%${coupon > be ? (currentLang==='es'?' — EXCEDIDO':' — EXCEEDED') : ''}`;
+      beEl.className = 'cp-breakeven ' + (coupon > be ? 'danger' : 'safe');
+    } else {
+      beEl.textContent = currentLang==='es'?'Modelo sin margen disponible para cupones':'Model has no margin available for coupons';
+      beEl.className = 'cp-breakeven danger';
+    }
+  });
+}
+
+/* ─── Init ─── */
+currentIdx = getBestIdx(currentPlan);
+document.body.className = 'lang-es';
+renderSizeTabs();
+update();
+</script>
+</body>
+</html>
