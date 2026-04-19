@@ -3,6 +3,18 @@
   "trailingSlash": false,
   "rewrites": [
     {
+      "source": "/programs",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/programs/ambassador",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/programs/space-cadet",
+      "destination": "/index.html"
+    },
+    {
       "source": "/planes/nebula",
       "destination": "/index.html"
     },
