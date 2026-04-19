@@ -1746,21 +1746,24 @@ input[type="date"].reg-input::-webkit-calendar-picker-indicator {
 
 /* ── Login button mobile ── */
 .btn-login-mob{
-  font-family:'Space Mono',monospace;font-size:10px;letter-spacing:0.04em;
-  border:1px solid rgba(232,72,0,0.35);color:rgba(232,72,0,0.75);
-  padding:5px 9px;border-radius:6px;cursor:pointer;transition:all 0.2s;
+  font-family:'Space Mono',monospace;font-size:11px;letter-spacing:0.04em;
+  border:1.5px solid rgba(232,72,0,0.7);color:rgba(232,72,0,1);
+  padding:6px 14px;border-radius:6px;cursor:pointer;transition:all 0.2s;
   text-decoration:none;display:inline-flex;align-items:center;justify-content:center;
-  background:rgba(232,72,0,0.04);white-space:nowrap;line-height:1;
+  background:rgba(232,72,0,0.08);white-space:nowrap;line-height:1;font-weight:600;
 }
 .btn-login-mob:hover{border-color:var(--orange);color:#fff;}
 
 
 /* ── Mobile menu: plans sub (option A — small grey) ── */
 .mob-menu-plans-sub a{
-  display:block;padding:9px 20px 9px 30px;
-  font-size:12px;color:rgba(255,255,255,0.32);font-weight:400;
-  letter-spacing:0.01em;border-bottom:1px solid rgba(255,255,255,0.03);
-  text-decoration:none;transition:color 0.15s;
+  display:block;padding:7px 20px 7px 32px;
+  font-size:11px;font-weight:500;
+  background:linear-gradient(135deg,rgba(255,184,48,0.7),rgba(232,72,0,0.6));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+  letter-spacing:0.02em;border-bottom:1px solid rgba(255,255,255,0.03);
+  text-decoration:none;opacity:0.85;
 }
 .mob-menu-plans-sub a:hover{color:rgba(255,255,255,0.65);}
 
@@ -1777,8 +1780,9 @@ input[type="date"].reg-input::-webkit-calendar-picker-indicator {
 }
 .btn-cta-mob-main:hover{opacity:0.88;}
 .mob-menu-phrase{
-  font-family:'Space Mono',monospace;font-size:9.5px;
-  color:rgba(255,255,255,0.15);letter-spacing:0.03em;text-align:center;
+  font-family:'Space Mono',monospace;font-size:10px;
+  color:rgba(255,184,48,0.75);letter-spacing:0.06em;text-align:center;
+  text-transform:uppercase;margin-top:12px;
 }
 
 /* ── CRM Acceder button ── */
@@ -1996,14 +2000,7 @@ input[type="date"].reg-input::-webkit-calendar-picker-indicator {
 
   <a href="/pagos" onclick="event.preventDefault();navigateTo('/pagos');closeMobileMenu();" data-en="Payouts" data-es="Pagos">Pagos</a>
 
-  <div class="mob-menu-plans-toggle" id="mob-programs-toggle" onclick="toggleMobPrograms()">
-    <span data-en="Programs" data-es="Programas">Programs</span>
-    <span class="mob-plans-chevron" id="mob-programs-chevron">›</span>
-  </div>
-  <div class="mob-menu-plans-sub" id="mob-programs-sub" style="display:none">
-    <a href="/programs/ambassador" onclick="event.preventDefault();navigateTo('/programs');setTimeout(function(){showProgramTab('ambassador');},80);closeMobileMenu();" data-en="Ambassador" data-es="Ambassador">Ambassador</a>
-    <a href="/programs/space-cadet" onclick="event.preventDefault();navigateTo('/programs');setTimeout(function(){showProgramTab('space-cadet');},80);closeMobileMenu();" data-en="Space Cadet" data-es="Space Cadet">Space Cadet</a>
-  </div>
+  <a href="/programs" onclick="event.preventDefault();navigateTo('/programs');closeMobileMenu();" data-en="Programs" data-es="Programas">Programs</a>
 
   <a href="/faq" onclick="event.preventDefault();closeMobileMenu();navigateTo('/');setTimeout(function(){var el=document.getElementById('faq');if(el)el.scrollIntoView({behavior:'smooth'});},200);">FAQ</a>
 
@@ -2702,7 +2699,7 @@ window.addEventListener('scroll', () => navEl.classList.toggle('scrolled', windo
   const mm = document.getElementById('mobile-menu');
   const cl = document.getElementById('mobile-menu-close');
   if (!hb || !mm) return;
-  const open  = () => { mm.style.display='flex'; document.body.style.overflow='hidden'; };
+  const open  = () => { mm.style.display='flex'; mm.scrollTop=0; document.body.style.overflow='hidden'; };
   const close = () => { mm.style.display='none'; document.body.style.overflow=''; };
   hb.addEventListener('click', () => mm.style.display==='flex' ? close() : open());
   cl && cl.addEventListener('click', close);
@@ -3959,7 +3956,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function closeMobileMenu() {
   var menu = document.getElementById('mobile-menu');
-  if (menu) menu.style.display = 'none';
+  if (menu) { menu.style.display = 'none'; menu.scrollTop = 0; }
   document.body.style.overflow = '';
 }
 
