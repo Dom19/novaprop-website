@@ -77,10 +77,10 @@ nav.scrolled{background:rgba(0,0,0,0.96);box-shadow:0 1px 0 rgba(255,255,255,0.0
 .hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:4px;z-index:200}
 .hamburger span{display:block;width:24px;height:2px;background:var(--amber);border-radius:2px;transition:all 0.3s}
 @media(max-width:900px){nav{padding:0 16px}.nav-links{display:none}.hamburger{display:flex}.btn-cta-nav{display:none}.btn-login-nav{display:none!important}}
-#mobile-menu{display:none;position:fixed;inset:0;z-index:150;background:#000;flex-direction:column;padding:90px 32px 40px;overflow-y:auto}
+#mobile-menu{display:none;position:fixed;inset:0;z-index:150;background:#000;flex-direction:column;padding:20px 24px 40px;overflow-y:auto}
 #mobile-menu a{display:block;font-family:'Sora',sans-serif;font-size:22px;font-weight:700;color:rgba(245,241,236,0.8);padding:20px 0;border-bottom:1px solid rgba(255,255,255,0.06);text-decoration:none;letter-spacing:-0.01em;transition:color 0.2s}
 #mobile-menu a:hover{color:var(--amber)}
-#mobile-menu-close{position:absolute;top:18px;right:20px;font-size:32px;color:var(--amber);cursor:pointer;background:none;border:none;line-height:1}
+#mobile-menu-close{font-size:28px;color:var(--amber);cursor:pointer;background:none;border:none;line-height:1;padding:0;flex-shrink:0;}
 
 /* HERO */
 .hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:120px 24px 80px;position:relative}
@@ -379,9 +379,9 @@ nav.scrolled{background:rgba(0,0,0,0.96);backdrop-filter:blur(12px);border-botto
 .btn-cta-nav:hover{background:#ff5a1f;transform:translateY(-1px)}
 .hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:4px;background:none;border:none}
 .hamburger span{display:block;width:22px;height:2px;background:var(--white);border-radius:2px;transition:all 0.3s}
-#mobile-menu{display:none;position:fixed;inset:0;z-index:150;background:#000;flex-direction:column;padding:90px 32px 40px;overflow-y:auto}
+#mobile-menu{display:none;position:fixed;inset:0;z-index:150;background:#000;flex-direction:column;padding:20px 24px 40px;overflow-y:auto}
 #mobile-menu a{font-size:18px;font-weight:600;padding:16px 0;border-bottom:1px solid rgba(255,255,255,0.08);color:var(--white)}
-#mobile-menu-close{position:absolute;top:22px;right:24px;background:none;border:none;color:var(--amber);font-size:24px;cursor:pointer;line-height:1}
+#mobile-menu-close{background:none;border:none;color:var(--amber);font-size:26px;cursor:pointer;line-height:1;padding:0;flex-shrink:0;}
 @media(max-width:900px){nav{padding:0 16px}.nav-links{display:none}.hamburger{display:flex}.btn-cta-nav{display:none}.btn-login-nav{display:none!important}}
 @media(max-width:480px){.nav-logo img{height:34px;filter:brightness(1.55) contrast(1.08) saturate(1.1);mix-blend-mode:screen}.btn-lang{padding:5px 10px;font-size:10px}}
 
@@ -1645,15 +1645,13 @@ input[type="date"].reg-input::-webkit-calendar-picker-indicator {
 
 
 /* ── Mobile menu header with logo ── */
-.mob-menu-header {
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:0 0 18px 0;
-  margin-bottom:8px;
+.mob-menu-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 0 16px 0;margin-bottom:8px;
   border-bottom:1px solid rgba(255,255,255,0.07);
-  gap:12px;
+  gap:10px;width:100%;
 }
+
 .mob-menu-logo {
   max-width:180px;
 }
@@ -1746,24 +1744,28 @@ input[type="date"].reg-input::-webkit-calendar-picker-indicator {
 
 /* ── Login button mobile ── */
 .btn-login-mob{
-  font-family:'Space Mono',monospace;font-size:11px;letter-spacing:0.04em;
-  border:1.5px solid rgba(232,72,0,0.7);color:rgba(232,72,0,1);
-  padding:6px 14px;border-radius:6px;cursor:pointer;transition:all 0.2s;
-  text-decoration:none;display:inline-flex;align-items:center;justify-content:center;
-  background:rgba(232,72,0,0.08);white-space:nowrap;line-height:1;font-weight:600;
+  font-family:'Space Mono',monospace;font-size:11px!important;letter-spacing:0.08em;
+  border:1px solid rgba(232,72,0,0.45);color:rgba(232,72,0,0.85)!important;
+  padding:6px 14px;border-radius:7px;cursor:pointer;transition:all 0.2s;
+  text-decoration:none;display:inline-flex;align-items:center;
+  background:rgba(232,72,0,0.05);white-space:nowrap;flex-shrink:0;
 }
+.btn-login-mob:hover{border-color:var(--orange);color:#fff!important;background:rgba(232,72,0,0.15);}
 .btn-login-mob:hover{border-color:var(--orange);color:#fff;}
 
 
 /* ── Mobile menu: plans sub (option A — small grey) ── */
-.mob-menu-plans-sub a{
-  display:block;padding:7px 20px 7px 32px;
-  font-size:11px;font-weight:500;
-  background:linear-gradient(135deg,rgba(255,184,48,0.7),rgba(232,72,0,0.6));
+#mobile-menu .mob-menu-plans-sub a{
+  display:block!important;padding:8px 20px 8px 36px!important;
+  font-size:13px!important;font-weight:600!important;
+  letter-spacing:0.02em!important;border-bottom:1px solid rgba(255,255,255,0.04)!important;
+  text-decoration:none!important;
+}
+#mobile-menu 
+.mob-menu-plans-sub a span{
+  background:linear-gradient(135deg,#FFE566,#e84800);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-  background-clip:text;
-  letter-spacing:0.02em;border-bottom:1px solid rgba(255,255,255,0.03);
-  text-decoration:none;opacity:0.85;
+  background-clip:text;display:inline;
 }
 .mob-menu-plans-sub a:hover{color:rgba(255,255,255,0.65);}
 
@@ -1781,8 +1783,8 @@ input[type="date"].reg-input::-webkit-calendar-picker-indicator {
 .btn-cta-mob-main:hover{opacity:0.88;}
 .mob-menu-phrase{
   font-family:'Space Mono',monospace;font-size:10px;
-  color:rgba(255,184,48,0.75);letter-spacing:0.06em;text-align:center;
-  text-transform:uppercase;margin-top:12px;
+  color:rgba(255,184,48,0.7);letter-spacing:0.04em;text-align:center;
+  margin-top:12px;
 }
 
 /* ── CRM Acceder button ── */
@@ -1808,7 +1810,7 @@ input[type="date"].reg-input::-webkit-calendar-picker-indicator {
 
 
 /* ── mob-menu-header-right ── */
-.mob-menu-header-right{display:flex!important;flex-direction:row!important;align-items:center!important;gap:7px!important;flex-shrink:0;flex-wrap:nowrap!important;}
+.mob-menu-header-right{display:flex;align-items:center;gap:10px;flex-shrink:0;}
 
 @media (max-width: 767px) {
   .btn-login-nav { display: none !important; }
@@ -1817,7 +1819,7 @@ input[type="date"].reg-input::-webkit-calendar-picker-indicator {
 @media (max-width: 360px) {
   .mob-menu-logo { max-width: 100px !important; height: 24px !important; }
   .btn-login-mob { font-size: 9px !important; padding: 4px 7px !important; letter-spacing: 0.02em !important; }
-  .btn-lang-mob { font-size: 9px !important; padding: 4px 7px !important; }
+  
   #mobile-menu-close { font-size: 18px !important; }
 }
 
@@ -1975,7 +1977,6 @@ input[type="date"].reg-input::-webkit-calendar-picker-indicator {
          onclick="closeMobileMenu();navigateTo('/');window.scrollTo(0,0)">
     <div class="mob-menu-header-right">
       <a href="https://dashboard.novaprop.io" target="_blank" class="btn-login-mob" data-en="Log In" data-es="Log In">Log In</a>
-      <button class="btn-lang btn-lang-mob" id="lang-toggle-mob" onclick="applyLang(currentLang==='en'?'es':'en')">ES</button>
       <button id="mobile-menu-close">&times;</button>
     </div>
   </div>
@@ -1988,10 +1989,10 @@ input[type="date"].reg-input::-webkit-calendar-picker-indicator {
     <span class="mob-plans-chevron" id="mob-plans-chevron">›</span>
   </div>
   <div class="mob-menu-plans-sub" id="mob-plans-sub" style="display:none">
-    <a href="/planes/nebula" onclick="event.preventDefault();showPlanPage('nebula');closeMobileMenu()">Nebula</a>
-    <a href="/planes/orbit" onclick="event.preventDefault();showPlanPage('orbit');closeMobileMenu()">Orbit</a>
-    <a href="/planes/nova-prime" onclick="event.preventDefault();showPlanPage('novaprime');closeMobileMenu()">Nova Prime</a>
-    <a href="/planes/supernova" onclick="event.preventDefault();showPlanPage('supernova');closeMobileMenu()">Supernova</a>
+    <a href="/planes/nebula" onclick="event.preventDefault();showPlanPage('nebula');closeMobileMenu()"><span>Nebula</span></a>
+    <a href="/planes/orbit" onclick="event.preventDefault();showPlanPage('orbit');closeMobileMenu()"><span>Orbit</span></a>
+    <a href="/planes/nova-prime" onclick="event.preventDefault();showPlanPage('novaprime');closeMobileMenu()"><span>Nova Prime</span></a>
+    <a href="/planes/supernova" onclick="event.preventDefault();showPlanPage('supernova');closeMobileMenu()"><span>Supernova</span></a>
   </div>
 
   <a href="#" onclick="closeMobileMenu();smoothScrollTo('crm-features');" data-en="Dashboard" data-es="Dashboard">Dashboard</a>
