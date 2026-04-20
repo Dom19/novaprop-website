@@ -67,17 +67,5 @@
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
-  <url>
-    <loc>https://novaprop.io/legal</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
 
-  <!-- Tools -->
-  <url>
-    <loc>https://novaprop.io/tools/sim/financial.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-
-</urlset>
+ </urlset>
