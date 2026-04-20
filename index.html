@@ -1982,7 +1982,7 @@ input[type="date"].reg-input::-webkit-calendar-picker-indicator {
   </div>
   <div class="mob-menu-tagline" data-en="The Universe Rewards the Disciplined." data-es="El Universo Recompensa a los Disciplinados.">El Universo Recompensa a los Disciplinados.</div>
 
-  <a href="#" onclick="closeMobileMenu();if(window.location.pathname!=='/'&&window.location.pathname!==''){navigateTo('/');setTimeout(function(){smoothScrollTo('why');},200);}else{smoothScrollTo('why');}" data-en="Why Nova Prop" data-es="Por Qué Nova Prop">Why Nova Prop</a>
+  <a href="#" onclick="closeMobileMenu();setTimeout(function(){if(window.location.pathname!=="/"&&window.location.pathname!==""){navigateTo("/");setTimeout(function(){smoothScrollTo("why");},180);}else{smoothScrollTo("why");}},60);" data-en="Why Nova Prop" data-es="Por Qué Nova Prop">Why Nova Prop</a>
 
   <div class="mob-menu-plans-toggle" id="mob-plans-toggle" onclick="toggleMobPlans()">
     <span data-en="Plans" data-es="Planes">Plans</span>
@@ -1995,9 +1995,9 @@ input[type="date"].reg-input::-webkit-calendar-picker-indicator {
     <a href="/planes/supernova" onclick="event.preventDefault();showPlanPage('supernova');closeMobileMenu()"><span>Supernova</span></a>
   </div>
 
-  <a href="#" onclick="closeMobileMenu();if(window.location.pathname!=='/'&&window.location.pathname!==''){navigateTo('/');setTimeout(function(){smoothScrollTo('crm-features');},200);}else{smoothScrollTo('crm-features');}" data-en="Dashboard" data-es="Dashboard">Dashboard</a>
+  <a href="#" onclick="closeMobileMenu();setTimeout(function(){if(window.location.pathname!=="/"&&window.location.pathname!==""){navigateTo("/");setTimeout(function(){smoothScrollTo("crm-features");},180);}else{smoothScrollTo("crm-features");}},60);" data-en="Dashboard" data-es="Dashboard">Dashboard</a>
 
-  <a href="#" onclick="closeMobileMenu();if(window.location.pathname!=='/'&&window.location.pathname!==''){navigateTo('/');setTimeout(function(){smoothScrollTo('compare');},200);}else{smoothScrollTo('compare');}" data-en="Compare" data-es="Comparar">Compare</a>
+  <a href="#" onclick="closeMobileMenu();setTimeout(function(){if(window.location.pathname!=="/"&&window.location.pathname!==""){navigateTo("/");setTimeout(function(){smoothScrollTo("compare");},180);}else{smoothScrollTo("compare");}},60);" data-en="Compare" data-es="Comparar">Compare</a>
 
   <a href="/pagos" onclick="event.preventDefault();navigateTo('/pagos');closeMobileMenu();" data-en="Payouts" data-es="Pagos">Pagos</a>
 
